@@ -33,7 +33,7 @@ export default function ForgotPassword() {
     <div className="min-h-screen flex items-center justify-center  px-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow p-6 space-y-6">
         <h2 className="text-2xl font-bold text-center">
-          {step === 1 ? "Forgot Password" : "Reset Your Password"}
+          {step === 1 ? "Forgot Password" : " Create New Password"}
         </h2>
 
         {step === 1 && (
@@ -70,7 +70,7 @@ export default function ForgotPassword() {
               <input
                 type={showOldPassword ? "text" : "password"}
                 name="oldPassword"
-                placeholder="Enter old password"
+                placeholder="Enter new password"
                 className="w-full px-4 py-2 border rounded mt-10 focus:outline-none"
                 value={formData.oldPassword}
                 onChange={handleChange}
@@ -89,7 +89,7 @@ export default function ForgotPassword() {
               <input
                 type={showNewPassword ? "text" : "password"}
                 name="newPassword"
-                placeholder="Enter new password"
+                placeholder="re-enter new password"
                 className="w-full px-4 py-2 border rounded mt-5 focus:outline-none"
                 value={formData.newPassword}
                 onChange={handleChange}

@@ -16,10 +16,20 @@ export default function Header() {
         </Link>
 
      
-        <ul className="hidden md:flex items-center gap-6">
+        <ul className="hidden md:flex items-center gap-12 mr-[-50px]">
           <li>
-            <Link href="/login" className="text-[#333] font-medium hover:underline">
-              Login
+            <Link href="/" className="text-[#333] font-medium hover:underline">
+            Home
+            </Link>
+          </li>
+          <li>
+            <Link href="/course" className="text-[#333] font-medium hover:underline">
+              Course
+            </Link>
+          </li>
+          <li>
+            <Link href="/download" className="text-[#333] font-medium hover:underline">
+             Download
             </Link>
           </li>
           <li>
@@ -29,7 +39,7 @@ export default function Header() {
           </li>
           <li>
             <Link href="/contact" className="text-[#333] font-medium hover:underline">
-              Contact
+              Contact us
             </Link>
           </li>
         </ul>

@@ -1,103 +1,120 @@
-import Image from "next/image";
+"use client";
+import React, { useState } from "react";
 
-export default function Home() {
+const App = () => {
+  const [mobile, setMobile] = useState("");
+  const [error, setError] = useState("");
+
+  const validateMobile = (value) => {
+    if (!value) return "Mobile number is required";
+    if (!/^\d{10}$/.test(value)) return "Enter a valid 10-digit mobile number";
+    return "";
+  };
+
+  const handleChange = (e) => {
+    const val = e.target.value;
+    setMobile(val);
+    const validationError = validateMobile(val);
+    setError(validationError);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="p-4">
+      {/* Main Section */}
+      <div className="flex flex-col md:flex-row justify-between mt-6 gap-6">
+        {/* Left Side Boxes */}
+        <div className="flex flex-wrap justify-center mt-20 animate-fadeInUp gap-4 gap-x-15 w-full">
+          {["Learning", "Skill Test", "Exam Mode"].map((item) => (
+            <div
+              key={item}
+              className="w-full sm:w-80 h-64 border-2 border-gray-500 flex items-center justify-center text-center font-medium
+                         bg-white
+                         transition-transform duration-300 ease-in-out
+                         hover:scale-105 hover:shadow-lg cursor-pointer
+                         rounded"
+            >
+              {item}
+            </div>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        {/* Right Side Login Box */}
+        <div className="w-full md:w-64 bg-gray-50 shadow-md p-4 space-y-4 py-20  mr-[-15px] h-[520px] rounded animate-fadeInUp">
+          <div className="font-semibold text-3xl mt-[-30px] text-center">
+            Existing user
+          </div>
+          <input
+            type="text"
+            placeholder="Mob. No."
+            value={mobile}
+            onChange={handleChange}
+            className={`w-full border px-2 py-1 mt-5 rounded focus:outline-none focus:ring-2 ${
+              error
+                ? "border-red-500 focus:ring-red-400"
+                : "border-gray-300 focus:ring-red-400"
+            }`}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
+          <button
+            className="w-full bg-red-600 text-white py-2 cursor-pointer rounded
+                       transition-transform duration-300 ease-in-out
+                       hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!!error || mobile.length === 0}
+          >
+            <a href="/login" className="block">
+              Login
+            </a>
+          </button>
+          <div className="border-t pt-2 mt-5">
+            <div className="text-gray-700 mt-5 text-center">NEW USER</div>
+            <button className="w-full mt-3 bg-pink-200 text-red-700 font-semibold py-2 cursor-pointer rounded
+                               transition-transform duration-300 ease-in-out
+                               hover:scale-105 hover:shadow-lg">
+              <a href="/signup" className="block">
+                Register Now!
+              </a>
+            </button>
+          </div>
+          <div>
+            <img
+              src="/mpc.png"
+              alt="MPCPCT Logo"
+              className="w-20 h-20 mx-auto mt-5"
+            />
+            <p className="text-center text-sm text-gray-600 mt-2">
+              MPCPCT - Empowering Education
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Note */}
+      <div className="mt-12 mx-auto max-w-3xl bg-black text-white p-4 rounded shadow text-center text-sm italic">
+        basic Computer & Typing skill are important for data entry/It operator/
+        Assistant Grade 3/Shorthand/ Typist and other similar positions in the
+        departments, corporation and agencies under government of India
+      </div>
+
+      {/* Tailwind Animation styles */}
+      <style>
+        {`
+          @keyframes fadeInUp {
+            0% {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          .animate-fadeInUp {
+            animation: fadeInUp 0.8s ease forwards;
+          }
+        `}
+      </style>
     </div>
   );
-}
+};
+
+export default App;
