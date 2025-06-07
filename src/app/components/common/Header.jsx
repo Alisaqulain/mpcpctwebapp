@@ -8,60 +8,104 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="bg-[#ccffff] border-b border-gray-300 px-4 py-3">
-      <nav className="max-w-[1200px] mx-auto flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 text-xl font-bold text-[#333]">
-          <img src="/mpc.png" alt="MPCPCT Logo" width={40} height={50} className="-mt-1" />
-          <span className="text-[1.5rem]">MPCPCT</span>
-        </Link>
+    <header className="bg-gradient-to-r from-cyan-50 to-blue-100 border-b border-gray-200 shadow-sm">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <img
+              src="/mpc.png"
+              alt="MPCPCT Logo"
+              width={48}
+              height={48}
+              className="object-contain"
+            />
+            <span className="text-2xl font-bold text-gray-800 hover:text-cyan-600 transition-colors duration-300">
+              MPCPCT
+            </span>
+          </Link>
 
-     
-        <ul className="hidden md:flex items-center gap-12 mr-[-50px]">
-          <li>
-            <Link href="/" className="text-[#333] font-medium hover:underline">
-            Home
+          <div className="hidden lg:flex items-center gap-8">
+            <Link
+              href="/"
+              className="text-gray-700 hover:text-cyan-600 font-medium text-base transition-colors duration-300"
+            >
+              Home
             </Link>
-          </li>
-          <li>
-            <Link href="/course" className="text-[#333] font-medium hover:underline">
+            <Link
+              href="/course"
+              className="text-gray-700 hover:text-cyan-600 font-medium text-base transition-colors duration-300"
+            >
               Course
             </Link>
-          </li>
-          <li>
-            <Link href="/download" className="text-[#333] font-medium hover:underline">
-             Download
+            <Link
+              href="/download"
+              className="text-gray-700 hover:text-cyan-600 font-medium text-base transition-colors duration-300"
+            >
+              Download
             </Link>
-          </li>
-          <li>
-            <Link href="/about" className="text-[#333] font-medium hover:underline">
+            <Link
+              href="/about"
+              className="text-gray-700 hover:text-cyan-600 font-medium text-base transition-colors duration-300"
+            >
               About
             </Link>
-          </li>
-          <li>
-            <Link href="/contact" className="text-[#333] font-medium hover:underline">
-              Contact us
+            <Link
+              href="/contact"
+              className="text-gray-700 hover:text-cyan-600 font-medium text-base transition-colors duration-300"
+            >
+              Contact Us
             </Link>
-          </li>
-        </ul>
+          </div>
 
-        <button className="md:hidden text-[#333]" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
-      </nav>
-
-      {isOpen && (
-        <div className="md:hidden mt-2 space-y-2 px-4 pb-4">
-          <Link href="/login" className="block text-[#333] font-medium hover:underline">
-            Login
-          </Link>
-          <Link href="/about" className="block text-[#333] font-medium hover:underline">
-            About
-          </Link>
-          <Link href="/contact" className="block text-[#333] font-medium hover:underline">
-            Contact
-          </Link>
+          <button
+            className="lg:hidden text-gray-700 hover:text-cyan-600 focus:outline-none"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle menu"
+          >
+            {isOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
         </div>
-      )}
+
+        {isOpen && (
+          <div className="lg:hidden mt-4 pb-4 flex flex-col space-y-3">
+            <Link
+              href="/"
+              className="text-gray-700 hover:text-cyan-600 font-medium text-base transition-colors duration-300"
+              onClick={() => setIsOpen(false)}
+            >
+              Home
+            </Link>
+            <Link
+              href="/course"
+              className="text-gray-700 hover:text-cyan-600 font-medium text-base transition-colors duration-300"
+              onClick={() => setIsOpen(false)}
+            >
+              Course
+            </Link>
+            <Link
+              href="/download"
+              className="text-gray-700 hover:text-cyan-600 font-medium text-base transition-colors duration-300"
+              onClick={() => setIsOpen(false)}
+            >
+              Download
+            </Link>
+            <Link
+              href="/about"
+              className="text-gray-700 hover:text-cyan-600 font-medium text-base transition-colors duration-300"
+              onClick={() => setIsOpen(false)}
+            >
+              About
+            </Link>
+            <Link
+              href="/contact"
+              className="text-gray-700 hover:text-cyan-600 font-medium text-base transition-colors duration-300"
+              onClick={() => setIsOpen(false)}
+            >
+              Contact Us
+            </Link>
+          </div>
+        )}
+      </nav>
     </header>
   );
 }

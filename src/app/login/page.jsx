@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react"; 
+import React, { useState } from "react";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -12,16 +12,6 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true);
-    try {
-      await signIn("google", { callbackUrl: "/" });
-    } catch (error) {
-      setError("Google sign-in failed. Please try again.");
-    }
-    setIsLoading(false);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -29,15 +19,14 @@ export default function LoginPage() {
     setSuccess("");
 
     if (!phone || !password) {
-      setError("Phone number and Password are required.");
+      setError("Phone number and password are required.");
       setIsLoading(false);
       return;
     }
 
-    // Optional: simple phone number validation (basic, can be improved)
     const phoneRegex = /^[0-9]{10,15}$/;
     if (!phoneRegex.test(phone)) {
-      setError("Please enter a valid phone number.");
+      setError("Please enter a valid phone number (10-15 digits).");
       setIsLoading(false);
       return;
     }
@@ -52,122 +41,148 @@ export default function LoginPage() {
       if (result?.error) {
         setError("Invalid credentials. Please try again.");
       } else {
-        setSuccess("Login successful!");
+        setSuccess("Login successful! Redirecting...");
       }
     } catch (err) {
-      setError("Something went wrong. Try again later.");
+      setError("Something went wrong. Please try again later.");
     }
 
     setIsLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <div className="flex flex-1 flex-col items-center justify-center px-4 py-8 sm:py-8">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Welcome to the MPCPCT Website
-        </h2>
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <p className="mt-2 text-center text-xl text-gray-600">
-          Login to connect as Student
-        </p>
-      </div>
-        <div className="mt-8 sm:mt-12 w-full max-w-[320px] sm:max-w-sm">
-          <button
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-            className="w-full flex items-center justify-center border border-gray-300 rounded-md py-2 hover:bg-gray-100 transition"
-          >
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt="Google Logo"
-              className="w-5 h-5 mr-2"
-            />
-            <span className="text-sm text-gray-700">Continue with Google</span>
-          </button>
-
-          <div className="flex items-center my-6 sm:my-8">
-            <div className="flex-grow border-t border-gray-300" />
-            <span className="mx-4 text-sm text-gray-400">or</span>
-            <div className="flex-grow border-t border-gray-300" />
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-gray-600 text-sm font-bold mb-1">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                placeholder="Enter your phone number"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full border border-gray-300 rounded-md py-2 px-4 text-sm"
-                required
-                pattern="[0-9]{10,15}" // HTML pattern validation
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-600 text-sm font-bold mb-1">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="(8 or more characters)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md py-2 px-4 text-sm pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-                >
-                  {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
-                </button>
-              </div>
-              <div className="text-right mt-3">
-                <a
-                  href="/forget"
-                  className="text-indigo-600 font-[600] text-[12px] hover:underline"
-                >
-                  Forgot Password?
-                </a>
-              </div>
-             <div className="text-left mt-[-20px] flex items-center gap-0.5">
-  <p className="text-[#000] font-[600] text-[12px] m-0">
-    Don't have an account
-  </p>
-  <a
-    href="/signup"
-    className="text-[#db1414] font-[600] text-[12px] hover:underline"
-  >
-    Sign Up
-  </a>
-</div>
-
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full mt-6 sm:mt-10 text-gray-500 bg-[#ccffff] border border-gray-300 rounded-md py-2 text-sm font-semibold hover:bg-[#092536]"
-            >
-              {isLoading ? "Logging in..." : "Login"}
-            </button>
-          </form>
-
-          
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20">
+     
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+            Welcome to MPCPCT
+          </h2>
+          <p className="mt-2 text-gray-600 text-lg font-medium">
+            Sign in to connet with us 
+          </p>
         </div>
 
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Phone Input */}
+          <div className="relative">
+            <input
+              type="tel"
+              id="phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="peer w-full bg-transparent border-2 border-gray-200 rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300"
+              placeholder="Phone Number"
+              required
+              pattern="[0-9]{10,15}"
+              aria-describedby="phone-error"
+            />
+            <label
+              htmlFor="phone"
+              className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
+            >
+              Phone Number
+            </label>
+          </div>
+
+          {/* Password Input */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="peer w-full bg-transparent border-2 border-gray-200 rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300 pr-12"
+              placeholder="Password"
+              required
+              aria-describedby="password-error"
+            />
+            <label
+              htmlFor="password"
+              className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
+            >
+              Password
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-indigo-600 transition-colors duration-300"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+            </button>
+          </div>
+
+          {/* Links */}
+          <div className="flex justify-between items-center text-sm font-medium">
+            <div className="flex items-center gap-2">
+              <p className="text-gray-600">No account?</p>
+              <a
+                href="/signup"
+                className="text-indigo-600 hover:text-indigo-800 hover:underline transition-all duration-300"
+              >
+                Sign Up
+              </a>
+            </div>
+            <a
+              href="/forget"
+              className="text-indigo-600 hover:text-indigo-800 hover:underline transition-all duration-300"
+            >
+              Forgot Password?
+            </a>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-indigo-600 text-white rounded-lg py-3 text-sm font-semibold hover:bg-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] focus:ring-4 focus:ring-indigo-200"
+            aria-label={isLoading ? "Logging in" : "Login"}
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-2 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Logging in...
+              </span>
+            ) : (
+              "Login"
+            )}
+          </button>
+        </form>
+
+        {/* Feedback Messages */}
         {error && (
-          <p className="text-red-500 text-center text-sm mt-4">{error}</p>
+          <p
+            className="text-red-500 text-center text-sm mt-4 animate-fade-in"
+            id="phone-error password-error"
+          >
+            {error}
+          </p>
         )}
         {success && (
-          <p className="text-green-500 text-center text-sm mt-4">{success}</p>
+          <p className="text-green-500 text-center text-sm mt-4 animate-fade-in">
+            {success}
+          </p>
         )}
       </div>
     </div>

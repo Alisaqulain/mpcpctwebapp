@@ -1,44 +1,33 @@
 "use client";
+
 import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 const SignUpPage = () => {
-  // State to toggle password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showRePassword, setShowRePassword] = useState(false);
-  
-  // State for form data
   const [formData, setFormData] = useState({
-    name: '',
-    phoneNumber: '',
-    email: '',
-    password: '',
-    rePassword: '',
-    country: 'India'
+    name: "",
+    phoneNumber: "",
+    email: "",
+    password: "",
+    rePassword: "",
+    country: "India",
   });
-  
-  // State for errors
   const [errors, setErrors] = useState({
-    name: '',
-    phoneNumber: '',
-    email: '',
-    password: '',
-    rePassword: '',
-    country: ''
+    name: "",
+    phoneNumber: "",
+    email: "",
+    password: "",
+    rePassword: "",
+    country: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-    
-    // Clear error when user types
+    setFormData({ ...formData, [name]: value });
     if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: ''
-      });
+      setErrors({ ...errors, [name]: "" });
     }
   };
 
@@ -46,45 +35,45 @@ const SignUpPage = () => {
     let valid = true;
     const newErrors = { ...errors };
 
-    // Name validation
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = "Name is required";
       valid = false;
     }
 
-    // Phone number validation
     if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber = 'Phone number is required';
+      newErrors.phoneNumber = "Phone number is required";
       valid = false;
-    } else if (!/^\d{10}$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = 'Phone number must be 10 digits';
+    } else if (!/^\d{10,15}$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = "Phone number must be 10-15 digits";
       valid = false;
     }
 
-    // Email validation
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
       valid = false;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
       valid = false;
     }
 
-    // Password validation
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
       valid = false;
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
       valid = false;
     }
 
-    // Re-Password validation
     if (!formData.rePassword) {
-      newErrors.rePassword = 'Please re-enter your password';
+      newErrors.rePassword = "Please re-enter your password";
       valid = false;
     } else if (formData.password !== formData.rePassword) {
-      newErrors.rePassword = 'Passwords do not match';
+      newErrors.rePassword = "Passwords do not match";
+      valid = false;
+    }
+
+    if (!formData.country) {
+      newErrors.country = "Country is required";
       valid = false;
     }
 
@@ -94,229 +83,245 @@ const SignUpPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
     if (validateForm()) {
-      // Form is valid, proceed with submission
-      console.log('Form submitted:', formData);
-      // Here you would typically send the data to your backend
+      console.log("Form submitted:", formData);
+      alert("Account created successfully!");
+      // Reset form after submission
+      setFormData({
+        name: "",
+        phoneNumber: "",
+        email: "",
+        password: "",
+        rePassword: "",
+        country: "India",
+      });
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-        Welcome to the MPCPCT Website
-      </h2>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <p className="mt-2 text-center text-xl text-gray-600">
-          Sign up to connect as Intern
+        <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight text-center">
+          Welcome to MPCPCT
+        </h2>
+        <p className="mt-2 text-center text-lg font-medium text-gray-600">
+          Sign up to connect with us
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="py-8 px-4 sm:px-10">
-          <div className="mb-6">
-            <button
-              type="button"
-              className="w-full flex cursor-pointer justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
-            >
-              <img
-                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                alt="Google Logo"
-                className="w-4 h-5 mr-2"
-              />
-              <span className="text-[15px]">Continue with Google</span>
-            </button>
-            <div className="flex items-center my-6 sm:my-8">
-              <div className="flex-grow border-t border-gray-300" />
-              <span className="mx-4 text-sm text-gray-400">or</span>
-              <div className="flex-grow border-t border-gray-300" />
-            </div>
-          </div>
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20">
+          
 
           <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            {/* Name */}
+            <div className="relative">
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleChange}
+                className={`peer w-full bg-transparent border-2 ${errors.name ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
+                placeholder="Name"
+                required
+                aria-describedby="name-error"
+              />
+              <label
+                htmlFor="name"
+                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
+              >
                 Name
               </label>
-              <div className="mt-1">
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter your name"
-                  className={`appearance-none block w-full px-3 py-2 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                />
-                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
-              </div>
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="name-error">
+                  {errors.name}
+                </p>
+              )}
             </div>
 
-            <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
+            {/* Phone Number */}
+            <div className="relative">
+              <input
+                id="phoneNumber"
+                name="phoneNumber"
+                type="tel"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                className={`peer w-full bg-transparent border-2 ${errors.phoneNumber ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
+                placeholder="Phone Number"
+                required
+                pattern="\d{10,15}"
+                aria-describedby="phoneNumber-error"
+              />
+              <label
+                htmlFor="phoneNumber"
+                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
+              >
                 Phone Number
               </label>
-              <div className="mt-1">
-                <input
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  type="text"
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
-                  placeholder="Enter your phone number"
-                  className={`appearance-none block w-full px-3 py-2 border ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                />
-                {errors.phoneNumber && <p className="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>}
-              </div>
+              {errors.phoneNumber && (
+                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="phoneNumber-error">
+                  {errors.phoneNumber}
+                </p>
+              )}
             </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            {/* Email */}
+            <div className="relative">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`peer w-full bg-transparent border-2 ${errors.email ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
+                placeholder="Email"
+                required
+                aria-describedby="email-error"
+              />
+              <label
+                htmlFor="email"
+                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
+              >
                 Email
               </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter your email"
-                  className={`appearance-none block w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                />
-                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-              </div>
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="email-error">
+                  {errors.email}
+                </p>
+              )}
             </div>
 
-            {/* Password Field with toggle */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+            {/* Password */}
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={handleChange}
+                className={`peer w-full bg-transparent border-2 ${errors.password ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300 pr-12`}
+                placeholder="Password"
+                required
+                aria-describedby="password-error"
+              />
+              <label
+                htmlFor="password"
+                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
+              >
+                Password (8+ characters)
               </label>
-              <div className="mt-1 relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="(6 or more characters)"
-                  className={`appearance-none block w-full px-3 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-                  tabIndex={-1}
-                >
-                  {showPassword ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-5 0-9-3.5-9-7s4-7 9-7a9.959 9.959 0 017.57 3.57M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-indigo-600 transition-colors duration-300"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+              </button>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="password-error">
+                  {errors.password}
+                </p>
+              )}
             </div>
 
-            {/* Re-Password Field with toggle */}
-            <div>
-              <label htmlFor="rePassword" className="block text-sm font-medium text-gray-700">
-                RE-Password
+            {/* Re-Password */}
+            <div className="relative">
+              <input
+                id="rePassword"
+                name="rePassword"
+                type={showRePassword ? "text" : "password"}
+                value={formData.rePassword}
+                onChange={handleChange}
+                className={`peer w-full bg-transparent border-2 ${errors.rePassword ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300 pr-12`}
+                placeholder="Re-enter Password"
+                required
+                aria-describedby="rePassword-error"
+              />
+              <label
+                htmlFor="rePassword"
+                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
+              >
+                Re-enter Password
               </label>
-              <div className="mt-1 relative">
-                <input
-                  id="rePassword"
-                  name="rePassword"
-                  type={showRePassword ? "text" : "password"}
-                  value={formData.rePassword}
-                  onChange={handleChange}
-                  placeholder="re-enter your password"
-                  className={`appearance-none block w-full px-3 py-2 border ${errors.rePassword ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowRePassword(!showRePassword)}
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-                  tabIndex={-1}
-                >
-                  {showRePassword ? (
-                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  ) : (
-                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-5 0-9-3.5-9-7s4-7 9-7a9.959 9.959 0 017.57 3.57M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {errors.rePassword && <p className="mt-1 text-sm text-red-600">{errors.rePassword}</p>}
+              <button
+                type="button"
+                onClick={() => setShowRePassword(!showRePassword)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-indigo-600 transition-colors duration-300"
+                aria-label={showRePassword ? "Hide password" : "Show password"}
+              >
+                {showRePassword ? <Eye size={20} /> : <EyeOff size={20} />}
+              </button>
+              {errors.rePassword && (
+                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="rePassword-error">
+                  {errors.rePassword}
+                </p>
+              )}
             </div>
 
-            <div>
-              <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+            {/* Country */}
+            <div className="relative">
+              <select
+                id="country"
+                name="country"
+                value={formData.country}
+                onChange={handleChange}
+                className={`peer w-full bg-transparent border-2 ${errors.country ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 focus:outline-none focus:border-indigo-500 transition-all duration-300 appearance-none`}
+                required
+                aria-describedby="country-error"
+              >
+                <option value="">Select a country</option>
+                <option value="India">India</option>
+                <option value="United States">United States</option>
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="Canada">Canada</option>
+                <option value="Australia">Australia</option>
+              </select>
+              <label
+                htmlFor="country"
+                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
+              >
                 Country
               </label>
-              <div className="mt-1 relative">
-                <select
-                  id="country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                <svg
+                  className="h-5 w-5 text-gray-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
                 >
-                  <option>India</option>
-                </select>
-
-                {/* Dropdown arrow */}
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 111.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 111.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </div>
+              {errors.country && (
+                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="country-error">
+                  {errors.country}
+                </p>
+              )}
             </div>
 
-            <div>
+            {/* Submit Button */}
             <button
-  type="submit"
-  className="w-full cursor-pointer border border-gray-300 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-500 bg-[#ccffff]"
-  onClick={(e) => {
-    e.preventDefault(); // prevent form submission to see alert immediately
-    alert("Account created successfully!"); // show alert
-  }}
->
-  Create Account
-</button>
-
-            </div>
+              type="submit"
+              className="w-full bg-indigo-600 text-white rounded-lg py-3 text-sm font-semibold hover:bg-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] focus:ring-4 focus:ring-indigo-200"
+              aria-label="Create Account"
+            >
+              Create Account
+            </button>
           </form>
 
-          <div className="mt-6 text-center text-sm">
-            <span className="text-gray-600">Already here on account</span>{" "}
+          <div className="mt-6 text-center text-sm font-medium">
+            <span className="text-gray-600">Already have an account?</span>{" "}
             <a
               href="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer text-[17px]"
+              className="text-indigo-600 hover:text-indigo-800 hover:underline transition-all duration-300"
             >
               Log In
             </a>
