@@ -7,7 +7,7 @@ export default function Footer() {
         padding: "2rem 2rem",
         textAlign: "center",
         borderTop: "1px solid #ddd",
-        marginTop: "2rem",
+        // marginTop: "2rem",
         color: "#666",
         fontSize: "0.9rem",
         backgroundColor: "#ccffff",
