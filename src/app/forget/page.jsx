@@ -101,9 +101,9 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen  flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20">
-        <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight text-center">
+        <h2 className="text-3xl font-extrabold text-[#290c52] mb-5 tracking-tight text-center">
           {step === 1 ? "Forgot Password" : "Create New Password"}
         </h2>
 
@@ -164,7 +164,7 @@ export default function ForgotPassword() {
 
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white rounded-lg py-3 text-sm font-semibold hover:bg-indigo-700 transition-all duration-300 transform hover:scale-[1.02] focus:ring-4 focus:ring-indigo-200"
+              className="w-full bg-[#290c52] text-white rounded-lg py-3 text-sm font-semibold hover:bg-indigo-700 transition-all duration-300 transform hover:scale-[1.02] focus:ring-4 focus:ring-indigo-200"
               aria-label="Verify"
             >
               Verify
@@ -244,7 +244,7 @@ export default function ForgotPassword() {
 
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white rounded-lg py-3 text-sm font-semibold hover:bg-indigo-700 transition-all duration-300 transform hover:scale-[1.02] focus:ring-4 focus:ring-indigo-200"
+              className="w-full bg-[#290c52] text-white rounded-lg py-3 text-sm font-semibold hover:bg-indigo-700 transition-all duration-300 transform hover:scale-[1.02] focus:ring-4 focus:ring-indigo-200"
               aria-label="Change Password"
             >
               Change Password

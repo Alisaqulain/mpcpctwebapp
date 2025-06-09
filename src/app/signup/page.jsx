@@ -99,18 +99,18 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight text-center">
+    <div className="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
+        <h2 className="text-4xl font-extrabold text-[#290c52] tracking-tight text-center">
           Welcome to MPCPCT
         </h2>
         <p className="mt-2 text-center text-lg font-medium text-gray-600">
           Sign up to connect with us
         </p>
       </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20">
           
 
           <form className="space-y-6" onSubmit={handleSubmit} noValidate>
@@ -264,26 +264,49 @@ const SignUpPage = () => {
             {/* Country */}
             <div className="relative">
               <select
-                id="country"
-                name="country"
-                value={formData.country}
+                id="states"
+                name="states"
+                value={formData.states}
                 onChange={handleChange}
-                className={`peer w-full bg-transparent border-2 ${errors.country ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 focus:outline-none focus:border-indigo-500 transition-all duration-300 appearance-none`}
+                className={`peer w-full mt-3 bg-transparent border-2 ${errors.country ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-400 focus:outline-none focus:border-indigo-500 transition-all duration-300 appearance-none`}
                 required
                 aria-describedby="country-error"
               >
-                <option value="">Select a country</option>
-                <option value="India">India</option>
-                <option value="United States">United States</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Canada">Canada</option>
-                <option value="Australia">Australia</option>
+  <option value="" disabled selected hidden>Select a state</option>               <option value="Andhra Pradesh">Andhra Pradesh</option>
+<option value="Arunachal Pradesh">Arunachal Pradesh</option>
+<option value="Assam">Assam</option>
+<option value="Bihar">Bihar</option>
+<option value="Chhattisgarh">Chhattisgarh</option>
+<option value="Goa">Goa</option>
+<option value="Gujarat">Gujarat</option>
+<option value="Haryana">Haryana</option>
+<option value="Himachal Pradesh">Himachal Pradesh</option>
+<option value="Jharkhand">Jharkhand</option>
+<option value="Karnataka">Karnataka</option>
+<option value="Kerala">Kerala</option>
+<option value="Madhya Pradesh">Madhya Pradesh</option>
+<option value="Maharashtra">Maharashtra</option>
+<option value="Manipur">Manipur</option>
+<option value="Meghalaya">Meghalaya</option>
+<option value="Mizoram">Mizoram</option>
+<option value="Nagaland">Nagaland</option>
+<option value="Odisha">Odisha</option>
+<option value="Punjab">Punjab</option>
+<option value="Rajasthan">Rajasthan</option>
+<option value="Sikkim">Sikkim</option>
+<option value="Tamil Nadu">Tamil Nadu</option>
+<option value="Telangana">Telangana</option>
+<option value="Tripura">Tripura</option>
+<option value="Uttar Pradesh">Uttar Pradesh</option>
+<option value="Uttarakhand">Uttarakhand</option>
+<option value="West Bengal">West Bengal</option>
+
               </select>
               <label
-                htmlFor="country"
+                htmlFor="states"
                 className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
               >
-                Country
+                
               </label>
               <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
                 <svg
@@ -306,11 +329,50 @@ const SignUpPage = () => {
                 </p>
               )}
             </div>
+               <div className="relative">
+              <input
+                id="name"
+                name="name"
+                type="text"
+              
+                className={`peer w-full  bg-transparent border-2 border-transparent rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
+                placeholder="Name"
+                required
+                aria-describedby="name-error"
+              />
+              <label
+                htmlFor="city"
+                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
+              >
+                City
+              </label>
+            
+            </div>
+               <div className="relative">
+              <input
+                id="profile"
+                name="profile"
+                type="file"
+              
+                className={`peer w-full  bg-transparent border-2 border-transparent rounded-lg py-3 px-4 text-gray-400 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
+                placeholder="Profile"
+                required
+                aria-describedby="name-error"
+              />
+              <label
+                htmlFor="profile"
+                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
+              >
+                Profile Picture
+              </label>
+            </div>
+            
+            
 
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white rounded-lg py-3 text-sm font-semibold hover:bg-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] focus:ring-4 focus:ring-indigo-200"
+              className="w-full bg-[#290c52] text-white rounded-lg py-3 text-sm font-semibold hover:bg-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] focus:ring-4 focus:ring-indigo-200"
               aria-label="Create Account"
             >
               Create Account
