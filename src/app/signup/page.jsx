@@ -1,9 +1,13 @@
+
 "use client";
 
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 const SignUpPage = () => {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showRePassword, setShowRePassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -12,7 +16,9 @@ const SignUpPage = () => {
     email: "",
     password: "",
     rePassword: "",
-    country: "India",
+    states: "",
+    city: "",
+    profile: null,
   });
   const [errors, setErrors] = useState({
     name: "",
@@ -20,14 +26,22 @@ const SignUpPage = () => {
     email: "",
     password: "",
     rePassword: "",
-    country: "",
+    states: "",
+    city: "",
+    profile: "",
+    general: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: "" });
+    const { name, value, files } = e.target;
+    if (name === "profile") {
+      setFormData({ ...formData, [name]: files[0] });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+    if (errors[name] || errors.general) {
+      setErrors({ ...errors, [name]: "", general: "" });
     }
   };
 
@@ -43,8 +57,8 @@ const SignUpPage = () => {
     if (!formData.phoneNumber.trim()) {
       newErrors.phoneNumber = "Phone number is required";
       valid = false;
-    } else if (!/^\d{10,15}$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = "Phone number must be 10-15 digits";
+    } else if (!/^\d{10}$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = "Phone number must be 10 digits";
       valid = false;
     }
 
@@ -72,8 +86,18 @@ const SignUpPage = () => {
       valid = false;
     }
 
-    if (!formData.country) {
-      newErrors.country = "Country is required";
+    if (!formData.states) {
+      newErrors.states = "State is required";
+      valid = false;
+    }
+
+    if (!formData.city.trim()) {
+      newErrors.city = "City is required";
+      valid = false;
+    }
+
+    if (!formData.profile) {
+      newErrors.profile = "Profile picture is required";
       valid = false;
     }
 
@@ -81,40 +105,84 @@ const SignUpPage = () => {
     return valid;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log("Form submitted:", formData);
-      alert("Account created successfully!");
-      // Reset form after submission
+    setIsLoading(true);
+    setErrors({});
+
+    if (!validateForm()) {
+      setIsLoading(false);
+      return;
+    }
+
+    const data = new FormData();
+    data.append("name", formData.name);
+    data.append("phoneNumber", formData.phoneNumber);
+    data.append("email", formData.email);
+    data.append("password", formData.password);
+    data.append("rePassword", formData.rePassword);
+    data.append("states", formData.states);
+    data.append("city", formData.city);
+    data.append("profile", formData.profile);
+
+    try {
+      const response = await fetch("/api/signup", {
+        method: "POST",
+        body: data,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setErrors(result.errors || { general: result.error || "Failed to create account" });
+        setIsLoading(false);
+        return;
+      }
+
+      const signInResult = await signIn("credentials", {
+        redirect: false,
+        phone: result.phone,
+        password: formData.password,
+      });
+
+      if (signInResult?.error) {
+        setErrors({ general: "Failed to sign in after signup. Please try logging in manually." });
+        setIsLoading(false);
+        return;
+      }
+
       setFormData({
         name: "",
         phoneNumber: "",
         email: "",
         password: "",
         rePassword: "",
-        country: "India",
+        states: "",
+        city: "",
+        profile: null,
       });
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setErrors({ general: "An error occurred. Please try again." });
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
-        <h2 className="text-4xl font-extrabold text-[#290c52] tracking-tight text-center">
-          Welcome to MPCPCT
-        </h2>
-        <p className="mt-2 text-center text-lg font-medium text-gray-600">
-          Sign up to connect with us
-        </p>
-      </div>
-          
+          <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
+            <h2 className="text-4xl font-extrabold text-[#290c52] tracking-tight text-center">
+              Welcome to MPCPCT
+            </h2>
+            <p className="mt-2 text-center text-lg font-medium text-gray-600">
+              Sign up to connect with us
+            </p>
+          </div>
 
           <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-            {/* Name */}
             <div className="relative">
               <input
                 id="name"
@@ -140,7 +208,6 @@ const SignUpPage = () => {
               )}
             </div>
 
-            {/* Phone Number */}
             <div className="relative">
               <input
                 id="phoneNumber"
@@ -151,7 +218,7 @@ const SignUpPage = () => {
                 className={`peer w-full bg-transparent border-2 ${errors.phoneNumber ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
                 placeholder="Phone Number"
                 required
-                pattern="\d{10,15}"
+                pattern="\d{10}"
                 aria-describedby="phoneNumber-error"
               />
               <label
@@ -167,7 +234,6 @@ const SignUpPage = () => {
               )}
             </div>
 
-            {/* Email */}
             <div className="relative">
               <input
                 id="email"
@@ -193,7 +259,6 @@ const SignUpPage = () => {
               )}
             </div>
 
-            {/* Password */}
             <div className="relative">
               <input
                 id="password"
@@ -227,7 +292,6 @@ const SignUpPage = () => {
               )}
             </div>
 
-            {/* Re-Password */}
             <div className="relative">
               <input
                 id="rePassword"
@@ -261,52 +325,51 @@ const SignUpPage = () => {
               )}
             </div>
 
-            {/* Country */}
             <div className="relative">
               <select
                 id="states"
                 name="states"
                 value={formData.states}
                 onChange={handleChange}
-                className={`peer w-full mt-3 bg-transparent border-2 ${errors.country ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-400 focus:outline-none focus:border-indigo-500 transition-all duration-300 appearance-none`}
+                className={`peer w-full mt-3 bg-transparent border-2 ${errors.states ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 focus:outline-none focus:border-indigo-500 transition-all duration-300 appearance-none`}
                 required
-                aria-describedby="country-error"
+                aria-describedby="states-error"
               >
-  <option value="" disabled selected hidden>Select a state</option>               <option value="Andhra Pradesh">Andhra Pradesh</option>
-<option value="Arunachal Pradesh">Arunachal Pradesh</option>
-<option value="Assam">Assam</option>
-<option value="Bihar">Bihar</option>
-<option value="Chhattisgarh">Chhattisgarh</option>
-<option value="Goa">Goa</option>
-<option value="Gujarat">Gujarat</option>
-<option value="Haryana">Haryana</option>
-<option value="Himachal Pradesh">Himachal Pradesh</option>
-<option value="Jharkhand">Jharkhand</option>
-<option value="Karnataka">Karnataka</option>
-<option value="Kerala">Kerala</option>
-<option value="Madhya Pradesh">Madhya Pradesh</option>
-<option value="Maharashtra">Maharashtra</option>
-<option value="Manipur">Manipur</option>
-<option value="Meghalaya">Meghalaya</option>
-<option value="Mizoram">Mizoram</option>
-<option value="Nagaland">Nagaland</option>
-<option value="Odisha">Odisha</option>
-<option value="Punjab">Punjab</option>
-<option value="Rajasthan">Rajasthan</option>
-<option value="Sikkim">Sikkim</option>
-<option value="Tamil Nadu">Tamil Nadu</option>
-<option value="Telangana">Telangana</option>
-<option value="Tripura">Tripura</option>
-<option value="Uttar Pradesh">Uttar Pradesh</option>
-<option value="Uttarakhand">Uttarakhand</option>
-<option value="West Bengal">West Bengal</option>
-
+                <option value="" disabled>Select a state</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                <option value="Assam">Assam</option>
+                <option value="Bihar">Bihar</option>
+                <option value="Chhattisgarh">Chhattisgarh</option>
+                <option value="Goa">Goa</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="Haryana">Haryana</option>
+                <option value="Himachal Pradesh">Himachal Pradesh</option>
+                <option value="Jharkhand">Jharkhand</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Kerala">Kerala</option>
+                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Manipur">Manipur</option>
+                <option value="Meghalaya">Meghalaya</option>
+                <option value="Mizoram">Mizoram</option>
+                <option value="Nagaland">Nagaland</option>
+                <option value="Odisha">Odisha</option>
+                <option value="Punjab">Punjab</option>
+                <option value="Rajasthan">Rajasthan</option>
+                <option value="Sikkim">Sikkim</option>
+                <option value="Tamil Nadu">Tamil Nadu</option>
+                <option value="Telangana">Telangana</option>
+                <option value="Tripura">Tripura</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                <option value="Uttarakhand">Uttarakhand</option>
+                <option value="West Bengal">West Bengal</option>
               </select>
               <label
                 htmlFor="states"
                 className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
               >
-                
+                State
               </label>
               <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
                 <svg
@@ -323,22 +386,24 @@ const SignUpPage = () => {
                   />
                 </svg>
               </div>
-              {errors.country && (
-                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="country-error">
-                  {errors.country}
+              {errors.states && (
+                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="states-error">
+                  {errors.states}
                 </p>
               )}
             </div>
-               <div className="relative">
+
+            <div className="relative">
               <input
-                id="name"
-                name="name"
+                id="city"
+                name="city"
                 type="text"
-              
-                className={`peer w-full  bg-transparent border-2 border-transparent rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
-                placeholder="Name"
+                value={formData.city}
+                onChange={handleChange}
+                className={`peer w-full bg-transparent border-2 ${errors.city ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
+                placeholder="City"
                 required
-                aria-describedby="name-error"
+                aria-describedby="city-error"
               />
               <label
                 htmlFor="city"
@@ -346,18 +411,22 @@ const SignUpPage = () => {
               >
                 City
               </label>
-            
+              {errors.city && (
+                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="city-error">
+                  {errors.city}
+                </p>
+              )}
             </div>
-               <div className="relative">
+
+            <div className="relative">
               <input
                 id="profile"
                 name="profile"
                 type="file"
-              
-                className={`peer w-full  bg-transparent border-2 border-transparent rounded-lg py-3 px-4 text-gray-400 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
-                placeholder="Profile"
+                onChange={handleChange}
+                className={`peer w-full bg-transparent border-2 ${errors.profile ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
                 required
-                aria-describedby="name-error"
+                aria-describedby="profile-error"
               />
               <label
                 htmlFor="profile"
@@ -365,17 +434,52 @@ const SignUpPage = () => {
               >
                 Profile Picture
               </label>
+              {errors.profile && (
+                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="profile-error">
+                  {errors.profile}
+                </p>
+              )}
             </div>
-            
-            
 
-            {/* Submit Button */}
+            {errors.general && (
+              <p className="mt-1 text-sm text-red-500 animate-fade-in" id="general-error">
+                {errors.general}
+              </p>
+            )}
+
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full bg-[#290c52] text-white rounded-lg py-3 text-sm font-semibold hover:bg-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] focus:ring-4 focus:ring-indigo-200"
-              aria-label="Create Account"
+              aria-label={isLoading ? "Creating account" : "Create Account"}
             >
-              Create Account
+              {isLoading ? (
+                <span className="flex items-center justify-center">
+                  <svg
+                    className="animate-spin h-5 w-5 mr-2 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Creating account...
+                </span>
+              ) : (
+                "Create Account"
+              )}
             </button>
           </form>
 

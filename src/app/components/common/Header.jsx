@@ -1,10 +1,17 @@
-// components/Header.js
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 
 export default function Header() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure client-side only logic runs after mount
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const toggleDropdown = (name) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
@@ -12,7 +19,6 @@ export default function Header() {
 
   const toggleMobileNav = () => {
     setMobileNavOpen(!mobileNavOpen);
-    // Close all dropdowns when toggling mobile nav
     setOpenDropdown(null);
   };
 
@@ -32,34 +38,24 @@ export default function Header() {
         </div>
 
         <div className="z-10 text-right text-sm">
-          {/* Language Switch or Extra Logo */}
+          {/* Optional right side content */}
         </div>
       </div>
 
-      {/* Mobile Nav Toggle Button */}
+      {/* Mobile Nav Toggle */}
       <div className="md:hidden bg-[#290c52] flex justify-between items-center px-4 py-2">
         <span className="text-white font-medium">Menu</span>
-        <button 
-          onClick={toggleMobileNav}
-          className="text-white focus:outline-none"
-        >
+        <button onClick={toggleMobileNav} className="text-white focus:outline-none">
           {mobileNavOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
         </button>
       </div>
 
-      {/* Navigation - Desktop */}
+      {/* Desktop Navigation */}
       <nav className="hidden md:block bg-[#290c52] text-white relative z-50">
         <ul className="flex justify-center flex-wrap px-4 py-2 md:py-4 text-sm md:text-md font-medium gap-4 md:gap-28 relative">
           <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/">Home</a></li>
-
-          {/* Course Dropdown */}
           <li className="relative">
-            <button
-              onClick={() => toggleDropdown("course")}
-              className="hover:bg-blue-700 px-3 py-1 rounded"
-            >
-              Course
-            </button>
+            <button onClick={() => toggleDropdown("course")} className="hover:bg-blue-700 px-3 py-1 rounded">Course</button>
             {openDropdown === "course" && (
               <ul className="absolute left-0 top-full mt-2 bg-white text-black rounded shadow-md min-w-[160px] z-50">
                 <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Learning Skill</li>
@@ -69,15 +65,8 @@ export default function Header() {
               </ul>
             )}
           </li>
-
-          {/* Download Dropdown */}
           <li className="relative">
-            <button
-              onClick={() => toggleDropdown("download")}
-              className="hover:bg-blue-700 px-3 py-1 rounded"
-            >
-              Download
-            </button>
+            <button onClick={() => toggleDropdown("download")} className="hover:bg-blue-700 px-3 py-1 rounded">Download</button>
             {openDropdown === "download" && (
               <ul className="absolute left-0 top-full mt-2 bg-white text-black rounded shadow-md min-w-[160px] z-50">
                 <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Video Notes</li>
@@ -86,72 +75,95 @@ export default function Header() {
               </ul>
             )}
           </li>
-
           <li className="hover:bg-blue-700 px-3 py-1 rounded">About us</li>
           <li className="hover:bg-blue-700 px-3 py-1 rounded">Contact Us</li>
         </ul>
       </nav>
 
-      {/* Navigation - Mobile */}
-      {mobileNavOpen && (
-        <nav className="md:hidden bg-[#290c52] text-white relative z-40">
-          <ul className="flex flex-col px-4 py-2 text-sm font-medium">
-            <li className="hover:bg-blue-700 px-3 py-2 rounded"><a href="/">Home</a></li>
+      {/* Mobile Sidebar with Transition */}
+      {isClient && (
+        <div
+          className={`fixed top-0 right-0 h-full w-[80%] bg-[#1f1f1f] text-white z-50 overflow-y-auto transform transition-transform duration-300 ease-in-out ${
+            mobileNavOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <div className="flex justify-end p-4">
+            <button onClick={toggleMobileNav}>
+              <FaTimes size={24} />
+            </button>
+          </div>
 
-            {/* Course Dropdown */}
-            <li className="relative">
-              <button
-                onClick={() => toggleDropdown("course")}
-                className="w-full text-left hover:bg-blue-700 px-3 py-2 rounded"
-              >
-                Course
+          <div className="flex flex-col items-center">
+            <img
+              src="/user.jpg"
+              alt="User"
+              className="w-24 h-24 rounded-full border-2 border-white mb-2"
+            />
+            <p className="text-lg font-semibold">User</p>
+          </div>
+
+          <ul className="mt-6 space-y-2 px-4">
+            <li className="border-b py-2"><a href="/">HOME</a></li>
+
+            <li>
+              <button onClick={() => toggleDropdown("learning")} className="w-full border-b pt-5 text-left py-2 flex justify-between items-center">
+                LEARNING <span>▾</span>
               </button>
-              {openDropdown === "course" && (
-                <ul className="bg-white text-black rounded shadow-md ml-4 my-1">
-                  <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">learning-skill test</li>
-                  <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer"> exam mode</li>
-                  <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Topic wise MCQ</li>
+              {openDropdown === "learning" && (
+                <ul className="pl-4 space-y-1 pt-4 text-sm text-gray-300">
+                  <li>Module 1</li>
+                  <li>Module 2</li>
                 </ul>
               )}
             </li>
 
-            {/* Download Dropdown */}
-            <li className="relative">
-              <button
-                onClick={() => toggleDropdown("download")}
-                className="w-full text-left hover:bg-blue-700 px-3 py-2 rounded"
-              >
-                Download
+            <li>
+              <button onClick={() => toggleDropdown("typing")} className="w-full pt-5 border-b text-left py-2 flex justify-between items-center">
+                <a href="/typing"> TYPING TEST </a> <span>▾</span>
               </button>
-              {openDropdown === "download" && (
-                <ul className="bg-white text-black rounded shadow-md ml-4 my-1">
-                  <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Admit Card</li>
-                  <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Syllabus PDF</li>
-                  <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Results</li>
+              {openDropdown === "typing" && (
+                <ul className="pl-4 space-y-1 pt-5 text-sm text-gray-300">
+                  <li>Speed Test</li>
+                  <li>Accuracy Test</li>
                 </ul>
               )}
             </li>
 
-            <li className="hover:bg-blue-700 px-3 py-2 rounded">About us</li>
-            <li className="hover:bg-blue-700 px-3 py-2 rounded">Contact Us</li>
+            <li className="border-b pt-5 py-2">EXAM MODE</li>
+
+            <li>
+              <button onClick={() => toggleDropdown("notes")} className="w-full pt-5 border-b text-left py-2 flex justify-between items-center">
+                NOTES <span>▾</span>
+              </button>
+              {openDropdown === "notes" && (
+                <ul className="pl-4 space-y-1 pt-5 text-sm text-gray-300">
+                  <li>Video Notes</li>
+                  <li>PDF Notes</li>
+                </ul>
+              )}
+            </li>
+
+            <li className="border-b pt-5 py-2">MCQ TEST</li>
           </ul>
-        </nav>
+
+          <div className="flex justify-center gap-4 mt-6 px-4">
+            <button className="bg-white text-black px-4 py-2 rounded"><a href="/login">Log in</a></button>
+            <button className="bg-blue-500 text-white px-4 py-2 rounded"><a href="/signup">Free Registration</a></button>
+          </div>
+        </div>
       )}
 
       {/* Highlight Bar */}
       <div className="bg-pink-200 relative overflow-hidden h-14">
-        {/* Fixed Label */}
         <div className="absolute left-0 md:left-90 top-1/2 transform -translate-y-1/2 z-10">
           <span className="bg-black text-white text-xs px-2 py-2 rounded">HIGHLIGHTS</span>
         </div>
-
-        {/* Scrolling Text (inline animation style) */}
         <div className="flex items-center whitespace-nowrap text-md font-semibold text-gray-800">
           <div className="w-full md:w-[50%] py-4 mx-auto">
             <span className="w-full md:w-[50%] py-2">
-              <marquee behavior="scroll" direction="left">
-                • CPCT Scorecard is valid for 07 years from the date of exam <span className="pl-15">  • Basic Computer & Typing skill are important for data entry </span> <span className="pl-15"> • IT Operator</span>   <span className="pl-15"> • Assistant Grade 3</span>   <span className="pl-15"> • Shorthand</span>   <span className="pl-15"> • Typist</span> and other similar positions in the departments <span className="pl-15"> • corporation and agencies under government of India.</span>
-              </marquee>
+              <div className="animate-marquee">
+                • CPCT Scorecard is valid for 07 years from the date of exam • Basic Computer & Typing skill are important for data entry • IT Operator • Assistant Grade 3 • Shorthand • Typist and other similar positions in the departments • corporation and agencies under government of India.
+              </div>
             </span>
           </div>
         </div>
