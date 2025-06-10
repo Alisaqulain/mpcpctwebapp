@@ -146,7 +146,7 @@ export default function Header() {
 
       {/* Highlight Bar */}
       <div className="bg-pink-200 relative overflow-hidden h-14">
-        <div className="absolute left-0 md:left-90 top-1/2 transform -translate-y-1/2 z-10">
+        <div className="absolute left-0 md:left-63 top-1/2 transform -translate-y-1/2 z-10">
           <span className="bg-black text-white text-xs px-2 py-2 rounded">HIGHLIGHTS</span>
         </div>
         <div className="flex items-center whitespace-nowrap text-md font-semibold text-gray-800">

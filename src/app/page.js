@@ -89,7 +89,7 @@
             </div>
 
             <div className="flex flex-col lg:flex-row justify-between gap-4 md:gap-6 relative">
-              <div className="flex flex-wrap justify-center mt-10 md:mt-20 animate-fadeInUp gap-4 md:gap-8 lg:gap-x-20 lg:gap-y-6 w-full">
+              <div className="flex flex-wrap justify-center mt-10 md:mt-20 animate-fadeInUp gap-4 md:gap-8 lg:gap-x-8 lg:gap-y-6 w-full">
                 {items.map(({ label, img }) => {
                   let colorClass = "bg-red-600";
                   if (label === "Learning") colorClass = "bg-green-400";
@@ -122,10 +122,10 @@
                 })}
               </div>
 
-              <div className="w-full lg:w-64 bg-gray-50 shadow-md p-4 space-y-4 py-10 md:py-20 lg:absolute lg:right-[-15] lg:top-0 h-auto md:h-[620px] rounded animate-fadeInUp lg:mt-[-147px]">
-                <div className="font-semibold text-[#290c52] text-xl md:text-2xl mt-0 md:mt-[-30px] text-center">
+              <div className="w-full lg:w-48 bg-gray-50 shadow-md p-4 space-y-4 py-10 md:py-20 lg:absolute lg:right-[-15] lg:top-0 h-auto md:h-[620px] rounded animate-fadeInUp lg:mt-[-147px]">
+                <div className="font-semibold text-[#290c52] text-xl md:text-xl mt-0 md:mt-[-30px] text-center">
                   Welcome Back <br />
-                  <span className="font-normal text-black text-sm md:text-[16px] block md:inline md:ml-2 mt-1 md:mt-0">
+                  <span className="font-normal text-black text-sm md:text-[14px] block md:inline md:ml-2 mt-1 md:mt-0">
                     Login to your MPCPCT Account
                   </span>
                 </div>
