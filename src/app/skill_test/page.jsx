@@ -20,13 +20,18 @@ export default function TypingTutor() {
 
   const exercises = [
     "CommonWord 4 Spee",
-    "CommonWord 4 Spee",
-    "CommonWord 4 Spee",
-    "CommonWord 4 Spee",
+    "CommonWord 5 Spee",
+    "CommonWord 6 Spee",
+    "CommonWord 7 Spee",
+    "CommonWord 8 Spee",
     "Exercise100",
     "Exercise101",
     "Exercise102",
     "Exercise103",
+    "Exercise104",
+    "Exercise105",
+    "Exercise106",
+    "Exercise107",
   ];
 
   const exams = [
@@ -116,13 +121,13 @@ export default function TypingTutor() {
           </div>
 
           <div className="mt-4 flex flex-col gap-2">
-            <button className="bg-green-500 text-white text-sm px-2 py-1 rounded hover:bg-green-600">
+            <button className="bg-green-500 cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-green-600">
               Add Exercise(+)
             </button>
-            <button className="bg-red-500 text-white text-sm px-2 py-1 rounded hover:bg-red-600">
+            <button className="bg-red-500 cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-red-600">
               Delete Exercise(-)
             </button>
-            <button className="bg-yellow-500 text-white text-sm px-2 py-1 rounded hover:bg-yellow-600">
+            <button className="bg-yellow-500 cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-yellow-600">
               Load Exercise
             </button>
           </div>
@@ -134,10 +139,10 @@ export default function TypingTutor() {
             <h2 className="font-semibold text-sm">Exercise 8/301 Preview</h2>
             <div className="flex items-center gap-2 text-sm">
               <span>Font: Times New Roman</span>
-              <button className="bg-gray-200 px-2 py-0.5 rounded">
+              <button className="bg-gray-200 px-2 cursor-pointer py-0.5 rounded">
                 Set Font
               </button>
-              <button className="bg-red-500 text-white px-2 py-0.5 rounded">
+              <button className="bg-red-500 text-white cursor-pointer px-2 py-0.5 rounded">
                 Print
               </button>
             </div>
@@ -157,10 +162,10 @@ export default function TypingTutor() {
 
           <div className="mt-3 text-xs text-gray-700">
             <p>
-              Total Characters: <b>5067</b> &nbsp;&nbsp; Total Words: <b>848</b>{" "}
-              &nbsp;&nbsp; Average Word Length: <b>6.0</b>
+              Total Characters: <b>5067</b> &nbsp;&nbsp; <span className="pl-10">Total Words: <b>848</b>{" "}
+              &nbsp;&nbsp;</span> <span className="pl-10">Average Word Length: <b>6.0</b></span>
             </p>
-            <p className="italic text-[10px] mt-1">
+            <p className="italic text-[12px] mt-2 font-semibold">
               Note: Contents are Automatically Repeated as per test duration
             </p>
           </div>
@@ -168,7 +173,7 @@ export default function TypingTutor() {
       </div>
 
       {/* Exam Selector Section */}
-      <div className="flex border text-sm font-serif w-full max-w-5xl mx-auto mt-8 rounded shadow overflow-hidden bg-white">
+      <div className="flex border text-sm font-serif w-full max-w-8xl mx-auto mt-4 rounded shadow overflow-hidden bg-white">
         {/* Exam List */}
         <div className="w-1/4 border-r p-2 bg-[#f2f2f2]">
           <h3 className="text-gray-800 font-semibold mb-2">4. Select Exam</h3>
@@ -195,12 +200,12 @@ export default function TypingTutor() {
             <h3 className="font-semibold text-gray-800 mb-2">
               Exam Description
             </h3>
-            <button className="bg-gray-200 px-4 py-1 rounded text-sm shadow">
+            <button className="bg-gray-200 px-4 py-1 cursor-pointer rounded text-md shadow">
               Type Test
             </button>
           </div>
 
-          <div className="text-green-700 leading-relaxed text-justify mt-1">
+          <div className="text-green-700 leading-relaxed text-justify mt-1 ">
             {description}
           </div>
         </div>
