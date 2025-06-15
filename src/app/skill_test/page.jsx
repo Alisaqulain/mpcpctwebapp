@@ -3,21 +3,16 @@ import React, { useState } from "react";
 
 export default function TypingTutor() {
   const [selectedLanguage, setSelectedLanguage] = useState("English");
+  const [selectedSubLanguage, setSelectedSubLanguage] = useState("");
   const [duration, setDuration] = useState(5);
   const [selected, setSelected] = useState("Exercise103");
-  const [selectedExam, setSelectedExam] = useState("Most Exams");
+  const [selectedExam, setSelectedExam] = useState("Most Exams (MPCPCT)");
+  const [backspace, setBackspace] = useState("OFF");
 
-  const languages = [
-    "Hindi",
-    "English",
-    "Raavi Punjabi",
-    "Mangal",
-    "Hindi Unicode",
-    "Punjabi",
-  ];
-
-  const durations = [2, 3, 5, 10, 15, 30];
-
+  const mainLanguages = ["Hindi", "English"];
+  const subLanguages = ["Ramington Gail", "Inscript"];
+  const backspaceOptions = ["OFF", "ON"];
+  const durations = [2, 5, 10, 15, 20, 30];
   const exercises = [
     "CommonWord 4 Spee",
     "CommonWord 5 Spee",
@@ -33,41 +28,69 @@ export default function TypingTutor() {
     "Exercise106",
     "Exercise107",
   ];
-
   const exams = [
-    "Most Exams",
-    "Raj. HighCourt LDC",
+    "Most Exams (MPCPCT)",
+    "HighCourt LDC",
     "RPSC, IA",
     "SSC, Steno",
   ];
-
   const description = `Matter to type is given on upper half part of screen. Word to type is highlighted. Back space is allowed till current word. Wrong typed word makes bold. So user can identify such mistakes. One or more word afterwards the highlighted word can be skipped, if needed. Skipped word will not added as mistakes.`;
 
   return (
     <div className="min-h-screen bg-[#dbe7ff] p-4 font-sans">
       {/* Language & Duration */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         {/* Language Selection */}
         <div className="bg-[#5c80bc] p-4 rounded shadow-md text-white">
           <h2 className="font-bold text-lg mb-2 border-b border-white pb-1">
             1. Select Typing Language
           </h2>
-          <div className="grid grid-cols-3 gap-2 text-black">
-            {languages.map((lang) => (
+
+          {/* Main Languages */}
+          <div className="grid grid-cols-2 gap-2 text-black mb-2">
+            {mainLanguages.map((lang) => (
               <label
                 key={lang}
                 className="bg-white px-2 py-1 rounded flex items-center gap-1"
               >
                 <input
                   type="radio"
-                  name="language"
+                  name="mainLanguage"
                   value={lang}
                   checked={selectedLanguage === lang}
-                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedLanguage(e.target.value);
+                    setSelectedSubLanguage(""); // reset sub-language
+                  }}
                 />
                 {lang}
               </label>
             ))}
+          </div>
+
+          {/* Sub Input Methods */}
+          <div className="grid grid-cols-2 gap-2 text-black">
+            {subLanguages.map((subLang) => {
+              const disabled = selectedLanguage !== "Hindi";
+              return (
+                <label
+                  key={subLang}
+                  className={`${
+                    disabled ? "opacity-50 cursor-not-allowed" : ""
+                  } bg-white px-2 py-1 rounded flex items-center gap-1`}
+                >
+                  <input
+                    type="radio"
+                    name="subLanguage"
+                    value={subLang}
+                    disabled={disabled}
+                    checked={selectedSubLanguage === subLang}
+                    onChange={(e) => setSelectedSubLanguage(e.target.value)}
+                  />
+                  {subLang}
+                </label>
+              );
+            })}
           </div>
         </div>
 
@@ -97,13 +120,40 @@ export default function TypingTutor() {
             ))}
           </div>
         </div>
+
+        {/* Backspace Selection */}
+        <div className="bg-[#5c80bc] p-4 rounded shadow-md text-white">
+          <h2 className="font-bold text-lg mb-2 border-b border-white pb-1">
+            3. Backspace
+          </h2>
+          <div className="grid grid-cols-2 gap-2 mt-6">
+            {backspaceOptions.map((option) => (
+              <label
+                key={option}
+                className={`px-2 py-1 rounded text-center font-medium cursor-pointer bg-white text-black border border-gray-400 ${
+                  backspace === option ? "bg-blue-200" : ""
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="backspace"
+                  value={option}
+                  className="mr-1"
+                  onChange={() => setBackspace(option)}
+                  checked={backspace === option}
+                />
+                {option}
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Exercise Selection & Preview */}
       <div className="flex flex-col md:flex-row min-h-[70vh] font-serif bg-white rounded shadow overflow-hidden">
         {/* Exercise Sidebar */}
         <div className="w-full md:w-1/4 border-r border-gray-300 bg-[#f2f2f2] p-3">
-          <h3 className="text-sm font-semibold mb-1">3. Select Exercise</h3>
+          <h3 className="text-sm font-semibold mb-1">4. Select Exercise</h3>
           <div className="h-64 overflow-y-scroll pr-1 border border-gray-300 rounded bg-white">
             {exercises.map((item) => (
               <div
@@ -121,7 +171,7 @@ export default function TypingTutor() {
           </div>
 
           <div className="mt-4 flex flex-col gap-2">
-            <button className="bg-green-500 cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-green-600">
+            <button className="bg-[#290c52] cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-blue-500">
               Add Exercise(+)
             </button>
             <button className="bg-red-500 cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-red-600">
@@ -136,16 +186,7 @@ export default function TypingTutor() {
         {/* Exercise Preview */}
         <div className="flex-1 p-4">
           <div className="flex justify-between items-center mb-2">
-            <h2 className="font-semibold text-sm">Exercise 8/301 Preview</h2>
-            <div className="flex items-center gap-2 text-sm">
-              <span>Font: Times New Roman</span>
-              <button className="bg-gray-200 px-2 cursor-pointer py-0.5 rounded">
-                Set Font
-              </button>
-              <button className="bg-red-500 text-white cursor-pointer px-2 py-0.5 rounded">
-                Print
-              </button>
-            </div>
+            <h2 className="font-semibold text-sm">Exercise</h2>
           </div>
 
           <div className="border border-gray-300 p-3 text-sm leading-6 h-[50vh] overflow-y-scroll bg-[#fefefe] rounded">
@@ -160,13 +201,12 @@ export default function TypingTutor() {
             recession and registering record growth.
           </div>
 
-          <div className="mt-3 text-xs text-gray-700">
+          <div className="mt-8 text-md text-gray-700">
             <p>
-              Total Characters: <b>5067</b> &nbsp;&nbsp; <span className="pl-10">Total Words: <b>848</b>{" "}
-              &nbsp;&nbsp;</span> <span className="pl-10">Average Word Length: <b>6.0</b></span>
-            </p>
-            <p className="italic text-[12px] mt-2 font-semibold">
-              Note: Contents are Automatically Repeated as per test duration
+              Total Characters: <b>5067</b>
+              <span className="pl-10">
+                Total Words: <b>848</b>
+              </span>
             </p>
           </div>
         </div>
@@ -176,7 +216,7 @@ export default function TypingTutor() {
       <div className="flex border text-sm font-serif w-full max-w-8xl mx-auto mt-4 rounded shadow overflow-hidden bg-white">
         {/* Exam List */}
         <div className="w-1/4 border-r p-2 bg-[#f2f2f2]">
-          <h3 className="text-gray-800 font-semibold mb-2">4. Select Exam</h3>
+          <h3 className="text-gray-800 font-semibold mb-2">5. Select Exam</h3>
           <ul className="space-y-1">
             {exams.map((exam) => (
               <li
@@ -197,15 +237,13 @@ export default function TypingTutor() {
         {/* Exam Description */}
         <div className="flex-1 flex flex-col justify-between p-3 bg-[#fefefe] relative">
           <div className="flex justify-between items-start">
-            <h3 className="font-semibold text-gray-800 mb-2">
-              Exam Description
-            </h3>
-            <button className="bg-gray-200 px-4 py-1 cursor-pointer rounded text-md shadow">
-              Type Test
+            <h3 className="font-semibold text-gray-800 mb-2">Exam Description</h3>
+            <button className="bg-green-500 text-teal-50 w-[180px] px-4 py-1 cursor-pointer rounded text-lg shadow">
+              <a href="/typing">Start Test</a>
             </button>
           </div>
 
-          <div className="text-green-700 leading-relaxed text-justify mt-1 ">
+          <div className="text-green-700 leading-relaxed text-justify mt-1">
             {description}
           </div>
         </div>

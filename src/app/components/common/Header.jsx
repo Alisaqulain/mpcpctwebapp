@@ -24,8 +24,26 @@ export default function Header() {
         </div>
 
         <div className="md:absolute inset-0 flex flex-col justify-center items-center text-center px-4">
-          <h1 className="text-3xl md:text-7xl font-bold uppercase md:mt-10 leading-5 text-[#290c52]">MPCPCT</h1>
-          <p className="text-lg md:text-3xl text-gray-600 md:mt-10 font-semibold">
+<h1
+  className="text-3xl md:text-7xl font-extrabold uppercase md:mt-0 leading-[1.2] text-[#290c52]"
+  style={{
+    textShadow: `
+      0 0 10px white,
+      1px 1px 0 #39245f,
+      2px 2px 0 #341f57,
+      3px 3px 0 #2d1a4e,
+      4px 4px 0 #241244,
+      5px 5px 6px rgba(0, 0, 0, 0.4)
+    `,
+    letterSpacing: '2px',
+  }}
+>
+  MPCPCT
+</h1>
+
+
+
+          <p className="text-lg md:text-3xl text-gray-600 md:mt-0 font-semibold">
             (To Help in typing & computer proficiency)
           </p>
         </div>
@@ -153,7 +171,7 @@ export default function Header() {
           <div className="w-full md:w-[50%] py-4 mx-auto">
             <span className="w-full md:w-[50%] py-2">
               <marquee behavior="scroll" direction="left">
-                • CPCT Scorecard is valid for 07 years from the date of exam <span className="pl-15">• Basic Computer & Typing skill are important for data entry</span> <span className="pl-15">• IT Operator</span> <span className="pl-15">• Assistant Grade 3</span> <span className="pl-15">• Shorthand</span> <span className="pl-15">• Typist</span> and other similar positions in the departments <span className="pl-15">• corporation and agencies under government of India.</span>
+                • CPCT Scorecard is valid for 07 years from the date of exam <span className="pl-15">• Basic Computer & Typing skill are important for data entry</span> <span className="">\ IT Operator</span> <span className="">\ Assistant Grade 3</span> <span className="">\ Shorthand</span> <span className="">\ Typist</span> and other similar positions in the departments <span className="">\ corporation and agencies under government of India.</span>
               </marquee>
             </span>
           </div>
