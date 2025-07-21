@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 
 export default function TypingTutor() {
   const [selectedLanguage, setSelectedLanguage] = useState("English");
@@ -9,11 +9,7 @@ export default function TypingTutor() {
   const [selectedExam, setSelectedExam] = useState("Most Exams (MPCPCT)");
   const [backspace, setBackspace] = useState("OFF");
 
-  const mainLanguages = ["Hindi", "English"];
-  const subLanguages = ["Ramington Gail", "Inscript"];
-  const backspaceOptions = ["OFF", "ON"];
-  const durations = [2, 5, 10, 15, 20, 30];
-  const exercises = [
+  const [exercises, setExercises] = useState([
     "CommonWord 4 Spee",
     "CommonWord 5 Spee",
     "CommonWord 6 Spee",
@@ -27,112 +23,138 @@ export default function TypingTutor() {
     "Exercise105",
     "Exercise106",
     "Exercise107",
-  ];
+  ]);
+  const [showModal, setShowModal] = useState(false);
+  const [newExercise, setNewExercise] = useState("");
+  const fileInputRef = useRef(null);
+
+  const mainLanguages = ["Hindi", "English"];
+  const subLanguages = ["Ramington Gail", "Inscript"];
+  const backspaceOptions = ["OFF", "ON"];
+  const durations = [2, 5, 10, 15, 20, 30];
   const exams = [
-    "Most Exams (MPCPCT)",
+    "Most Exams (CPCT)",
     "HighCourt LDC",
-    "RPSC, IA",
+    "RSCIT, RPSC",
     "SSC, Steno",
   ];
+
   const description = `Matter to type is given on upper half part of screen. Word to type is highlighted. Back space is allowed till current word. Wrong typed word makes bold. So user can identify such mistakes. One or more word afterwards the highlighted word can be skipped, if needed. Skipped word will not added as mistakes.`;
 
-  return (
-    <div className="min-h-screen bg-[#dbe7ff] p-4 font-sans">
-      {/* Language & Duration */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        {/* Language Selection */}
-        <div className="bg-[#5c80bc] p-4 rounded shadow-md text-white">
-          <h2 className="font-bold text-lg mb-2 border-b border-white pb-1">
-            1. Select Typing Language
-          </h2>
+  const handleAddExercise = () => {
+    if (newExercise.trim() !== "" && !exercises.includes(newExercise)) {
+      setExercises([newExercise, ...exercises]);
+      setNewExercise("");
+      setShowModal(false);
+    }
+  };
 
-          {/* Main Languages */}
+  const handleDeleteExercise = () => {
+    const filtered = exercises.filter((item) => item !== selected);
+    setExercises(filtered);
+    setSelected(filtered[0] || "");
+  };
+
+  const handleLoadExercise = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.name.endsWith(".txt")) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        alert("Loaded File:\n" + event.target.result.slice(0, 200) + "...");
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#fff] p-4 font-sans">
+      {/* Language & Duration */}
+    <div className="grid grid-cols-3 gap-1 md:gap-4">
+        {/* Language Selection */}
+        <div className="bg-[#290c52] p-4 rounded shadow-md text-white">
+          <h2 className="font-bold text-[10px] md:text-lg mb-2 border-b border-white pb-1">1. Select Typing Language</h2>
           <div className="grid grid-cols-2 gap-2 text-black mb-2">
             {mainLanguages.map((lang) => (
-              <label
-                key={lang}
-                className="bg-white px-2 py-1 rounded flex items-center gap-1"
-              >
+              <label key={lang} className="bg-white px-1 md:px-2 py-1 w-12 md:w-auto h-auto md:h-10 rounded flex items-center gap-1">
                 <input
                   type="radio"
                   name="mainLanguage"
+                  className="md:w-auto md:h-auto h-5 w-2"
                   value={lang}
                   checked={selectedLanguage === lang}
                   onChange={(e) => {
                     setSelectedLanguage(e.target.value);
-                    setSelectedSubLanguage(""); // reset sub-language
+                    setSelectedSubLanguage("");
                   }}
                 />
-                {lang}
+                <p className="md:text-sm text-[7px]">{lang}</p>
               </label>
             ))}
           </div>
-
-          {/* Sub Input Methods */}
           <div className="grid grid-cols-2 gap-2 text-black">
             {subLanguages.map((subLang) => {
               const disabled = selectedLanguage !== "Hindi";
               return (
                 <label
                   key={subLang}
-                  className={`${
-                    disabled ? "opacity-50 cursor-not-allowed" : ""
-                  } bg-white px-2 py-1 rounded flex items-center gap-1`}
+                  className={`${disabled ? "opacity-50 cursor-not-allowed" : ""} bg-white w-12 md:w-auto h-auto md:h-10 px-2 py-1 rounded flex items-center gap-1`}
                 >
                   <input
                     type="radio"
                     name="subLanguage"
+                    className="md:w-auto md:h-auto h-5 w-2"
                     value={subLang}
                     disabled={disabled}
                     checked={selectedSubLanguage === subLang}
                     onChange={(e) => setSelectedSubLanguage(e.target.value)}
                   />
-                  {subLang}
+                  <p className="md:text-sm text-[5px]">{subLang}</p>
                 </label>
               );
             })}
           </div>
         </div>
 
-        {/* Duration Selection */}
-        <div className="bg-[#5c80bc] p-4 rounded shadow-md text-white">
-          <h2 className="font-bold text-lg mb-2 border-b border-white pb-1">
-            2. Select Duration in Minutes
-          </h2>
-          <div className="grid grid-cols-3 gap-2">
+        {/* Duration */}
+        <div className="bg-[#290c52] p-4 rounded shadow-md text-white">
+          <h2 className="font-bold text-[10px] md:text-lg mb-2 border-b border-white pb-1">2. Select Duration in Minutes</h2>
+          <div className="grid grid-cols-3 gap-2 mt-6">
             {durations.map((time) => (
-              <label
-                key={time}
-                className={`px-2 py-1 rounded text-center font-medium cursor-pointer bg-white text-black border border-gray-400 ${
-                  duration === time ? "bg-blue-200" : ""
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="duration"
-                  value={time}
-                  className="mr-1"
-                  onChange={() => setDuration(time)}
-                  checked={duration === time}
-                />
-                {time} M
-              </label>
+             <label
+  key={time}
+  className={`flex flex-col md:flex-row items-center md:justify-center gap-0 md:gap-1 px-2 py-1 rounded font-medium mt-[-5] md:mt-0 cursor-pointer bg-white h-10 w-8 md:h-auto md:w-auto text-black border border-gray-400 ${
+    duration === time ? "bg-blue-200" : ""
+  }`}
+>
+  <input
+    type="radio"
+    name="duration"
+    value={time}
+    onChange={() => setDuration(time)}
+    checked={duration === time}
+    className="w-3 h-3"
+  />
+  <span className="text-[10px] md:text-lg">{time}M</span>
+</label>
+
             ))}
           </div>
         </div>
 
-        {/* Backspace Selection */}
-        <div className="bg-[#5c80bc] p-4 rounded shadow-md text-white">
-          <h2 className="font-bold text-lg mb-2 border-b border-white pb-1">
-            3. Backspace
-          </h2>
+        {/* Backspace */}
+        <div className="bg-[#290c52] p-4 rounded shadow-md text-white">
+          <h2 className="font-bold text-[10px] md:text-lg mb-2 border-b border-white pb-1">3. Backspace</h2>
           <div className="grid grid-cols-2 gap-2 mt-6">
             {backspaceOptions.map((option) => (
               <label
                 key={option}
-                className={`px-2 py-1 rounded text-center font-medium cursor-pointer bg-white text-black border border-gray-400 ${
-                  backspace === option ? "bg-blue-200" : ""
-                }`}
+                className={`px-2 py-1 rounded text-center font-medium cursor-pointer bg-white text-black border border-gray-400 ${backspace === option ? "bg-blue-200" : ""}`}
               >
                 <input
                   type="radio"
@@ -150,15 +172,34 @@ export default function TypingTutor() {
       </div>
 
       {/* Exercise Selection & Preview */}
-      <div className="flex flex-col md:flex-row min-h-[70vh] font-serif bg-white rounded shadow overflow-hidden">
-        {/* Exercise Sidebar */}
-        <div className="w-full md:w-1/4 border-r border-gray-300 bg-[#f2f2f2] p-3">
+      <div className="flex md:w-auto min-h-[70vh] font-serif bg-white rounded shadow overflow-hidden">
+        {/* Sidebar */}
+        <div className="w-[40%] md:w-1/4 border-r border-gray-300 bg-[#fff] p-3 mt-1 md:mt-0">
           <h3 className="text-sm font-semibold mb-1">4. Select Exercise</h3>
-          <div className="h-64 overflow-y-scroll pr-1 border border-gray-300 rounded bg-white">
+          <div
+            className="h-84 md:h-64 overflow-y-scroll pr-1 border border-gray-300 rounded bg-white"
+            style={{
+              scrollbarWidth: "thin",
+              scrollbarColor: "#a0aec0 #f1f1f1",
+            }}
+          >
+            <style jsx>{`
+              div::-webkit-scrollbar {
+                width: 6px;
+              }
+              div::-webkit-scrollbar-track {
+                background: #f1f1f1;
+              }
+              div::-webkit-scrollbar-thumb {
+                background-color: #a0aec0;
+                border-radius: 10px;
+              }
+            `}</style>
+
             {exercises.map((item) => (
               <div
                 key={item}
-                className={`text-sm px-2 py-1 cursor-pointer ${
+                className={`text-[10px] md:text-sm px-2 py-1 cursor-pointer ${
                   selected === item
                     ? "bg-blue-500 text-white"
                     : "hover:bg-gray-100"
@@ -170,52 +211,57 @@ export default function TypingTutor() {
             ))}
           </div>
 
+          {/* Buttons */}
           <div className="mt-4 flex flex-col gap-2">
-            <button className="bg-[#290c52] cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-blue-500">
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-[#290c52] cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-blue-500"
+            >
               Add Exercise(+)
             </button>
-            <button className="bg-red-500 cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-red-600">
+            <button
+              onClick={handleDeleteExercise}
+              className="bg-red-500 cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-red-600"
+            >
               Delete Exercise(-)
             </button>
-            <button className="bg-yellow-500 cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-yellow-600">
+            <button
+              onClick={handleLoadExercise}
+              className="bg-pink-500 cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-yellow-600"
+            >
               Load Exercise
             </button>
+            <input
+              type="file"
+              accept=".txt"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleFileChange}
+            />
           </div>
         </div>
 
-        {/* Exercise Preview */}
+        {/* Preview */}
         <div className="flex-1 p-4">
           <div className="flex justify-between items-center mb-2">
             <h2 className="font-semibold text-sm">Exercise</h2>
           </div>
-
           <div className="border border-gray-300 p-3 text-sm leading-6 h-[50vh] overflow-y-scroll bg-[#fefefe] rounded">
             Brexit was quoted as being the financial equivalent of doomsday for
-            Britain’s economy. Every economic pundit worth his/her salt
-            predicted dire consequences for Britain. Fear mongering was rampant,
-            and memories from the Great Depression were invoked. However, a
-            quarter into the Brexit all this has turned out to be mere
-            propaganda. The Bank of England has come out of this test with
-            flying colours. Not only is the British economy afloat, but it has
-            also kicked into high gear with England defying the possibility of a
-            recession and registering record growth.
+            Britain's economy...
           </div>
-
-          <div className="mt-8 text-md text-gray-700">
+          <div className="mt-8 text-sm md:text-md text-gray-700">
             <p>
               Total Characters: <b>5067</b>
-              <span className="pl-10">
-                Total Words: <b>848</b>
-              </span>
+              <span className="pl-10">Total Words: <b>848</b></span>
             </p>
           </div>
         </div>
       </div>
 
-      {/* Exam Selector Section */}
+      {/* Exam Selector */}
       <div className="flex border text-sm font-serif w-full max-w-8xl mx-auto mt-4 rounded shadow overflow-hidden bg-white">
-        {/* Exam List */}
-        <div className="w-1/4 border-r p-2 bg-[#f2f2f2]">
+        <div className="w-1/4 border-r p-2 bg-[#fff]">
           <h3 className="text-gray-800 font-semibold mb-2">5. Select Exam</h3>
           <ul className="space-y-1">
             {exams.map((exam) => (
@@ -234,20 +280,55 @@ export default function TypingTutor() {
           </ul>
         </div>
 
-        {/* Exam Description */}
-        <div className="flex-1 flex flex-col justify-between p-3 bg-[#fefefe] relative">
-          <div className="flex justify-between items-start">
-            <h3 className="font-semibold text-gray-800 mb-2">Exam Description</h3>
-            <button className="bg-green-500 text-teal-50 w-[180px] px-4 py-1 cursor-pointer rounded text-lg shadow">
-              <a href="/typing">Start Test</a>
+        <div className="flex-1 flex flex-col justify-between p-3 bg-white relative overflow-auto">
+          <div className="flex flex-row justify-between items-start gap-4">
+            <h3 className="font-semibold text-gray-800 mb-2 text-lg">
+              Exam Description
+            </h3>
+            <button className="bg-green-500 text-white w-[300px] px-4 py-1 mx-auto cursor-pointer rounded text-lg shadow hover:bg-green-600 transition-colors">
+              <a href="/typing" className="block w-full">Start Test</a>
             </button>
           </div>
-
-          <div className="text-green-700 leading-relaxed text-justify mt-1">
+          <div className="text-green-700 leading-relaxed text-justify mt-1 text-sm  md:overflow-auto md:text-sm">
             {description}
           </div>
         </div>
       </div>
+
+      {/* Modal for Adding Exercise */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-md w-[300px]">
+            <h2 className="text-lg font-semibold mb-2 text-center">
+              Add Exercise
+            </h2>
+            <input
+              type="text"
+              value={newExercise}
+              onChange={(e) => setNewExercise(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-1 mb-4"
+              placeholder="Exercise name"
+            />
+            <div className="flex justify-between">
+              <button
+                onClick={handleAddExercise}
+                className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
+              >
+                Add
+              </button>
+              <button
+                onClick={() => {
+                  setNewExercise("");
+                  setShowModal(false);
+                }}
+                className="bg-gray-400 text-white px-4 py-1 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

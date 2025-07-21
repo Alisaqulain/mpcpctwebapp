@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 
-
 export default function Header() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -23,39 +22,33 @@ export default function Header() {
           <img src="/logor.png" alt="CPCT Logo" className="w-50 ml-35" />
         </div>
 
-        <div className="md:absolute inset-0 flex flex-col justify-center items-center text-center px-4">
-<h1
-  className="text-3xl md:text-7xl font-extrabold uppercase md:mt-0 leading-[1.2] text-[#290c52]"
-  style={{
-    textShadow: `
-      0 0 10px white,
-      1px 1px 0 #39245f,
-      2px 2px 0 #341f57,
-      3px 3px 0 #2d1a4e,
-      4px 4px 0 #241244,
-      5px 5px 6px rgba(0, 0, 0, 0.4)
-    `,
-    letterSpacing: '2px',
-  }}
->
-  MPCPCT
-</h1>
+        <div className="md:absolute inset-0 flex flex-col justify-center items-center text-center px-4 md:ml-0 ml-8">
+          <h1
+            className="text-3xl md:text-7xl font-extrabold uppercase md:mt-0 leading-[1.2] text-transparent bg-clip-text bg-center bg-cover"
+            style={{
+              backgroundImage: "url('/bg.jpg')",
+            }}
+          >
+            MPCPCT
+          </h1>
+         <p className="text-sm md:text-3xl text-gray-600 md:mt-0 font-semibold">
+  <span className="hidden md:inline">(</span>
+  To Help in typing & computer proficiency
+  <span className="hidden md:inline">)</span>
+</p>
 
-
-
-          <p className="text-lg md:text-3xl text-gray-600 md:mt-0 font-semibold">
-            (To Help in typing & computer proficiency)
-          </p>
         </div>
 
-        <div className="z-10 text-right text-sm">
-          {/* Optional right side content */}
-        </div>
+        <div className="z-10 text-right text-sm"></div>
       </div>
 
       {/* Mobile Nav Toggle */}
       <div className="md:hidden bg-[#290c52] flex justify-between items-center px-4 py-2">
-        <span className="text-white font-medium">Menu</span>
+        <span className="text-white font-medium"><a href="/">Home </a></span>
+         <a href="/profile"><div className="items-center pl-60">
+            <img src="/lo.jpg" className="w-8 h-8 rounded-full border" />
+            {/* <p className="pl-2.5 text-[10px]">view</p> */}
+          </div></a>
         <button onClick={toggleMobileNav} className="text-white focus:outline-none">
           {mobileNavOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
         </button>
@@ -63,35 +56,92 @@ export default function Header() {
 
       {/* Desktop Navigation */}
       <nav className="hidden md:block bg-[#290c52] text-white relative z-50">
-        <ul className="flex justify-center flex-wrap px-4 py-2 md:py-4 text-sm md:text-md font-medium gap-4 md:gap-28 relative">
+        <ul className="flex justify-center flex-wrap px-4 py-2 md:py-4 text-sm md:text-md font-medium gap-4 md:gap-18 relative">
           <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/">Home</a></li>
           <li className="relative">
-            <button onClick={() => toggleDropdown("course")} className="hover:bg-blue-700 px-3 py-1 rounded">Course</button>
-            {openDropdown === "course" && (
-              <ul className="absolute left-0 top-full mt-2 bg-white text-black rounded shadow-md min-w-[160px] z-50">
-                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Learning Skill</li>
-                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Test</li>
-                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Exam Mode</li>
-                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Topic Wise MCQ</li>
-              </ul>
-            )}
-          </li>
-          <li className="relative">
-            <button onClick={() => toggleDropdown("download")} className="hover:bg-blue-700 px-3 py-1 rounded">Download</button>
-            {openDropdown === "download" && (
-              <ul className="absolute left-0 top-full mt-2 bg-white text-black rounded shadow-md min-w-[160px] z-50">
-                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Video Notes</li>
-                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Notes Pdf</li>
-                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">Syllabus PDF</li>
-              </ul>
-            )}
-          </li>
-          <li className="hover:bg-blue-700 px-3 py-1 rounded">About us</li>
-          <li className="hover:bg-blue-700 px-3 py-1 rounded">Contact Us</li>
+  <button
+    onClick={() => toggleDropdown("course")}
+    className="hover:bg-blue-700 px-3 py-1 rounded flex items-center gap-1"
+  >
+    Course
+    <span
+      className={`transform transition-transform duration-300 ${
+        openDropdown === "course" ? "rotate-180" : "rotate-0"
+      } text-lg`}
+    >
+      ▾
+    </span>
+  </button>
+
+  {/* Dropdown menu */}
+  <ul
+    className={`absolute left-0 top-full mt-2 bg-white text-black rounded shadow-md min-w-[160px] z-50 transition-all duration-300 origin-top transform ${
+      openDropdown === "course"
+        ? "scale-100 opacity-100"
+        : "scale-95 opacity-0 pointer-events-none"
+    }`}
+  >
+    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+      <a href="/learning">Learning</a>
+    </li>
+    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+      <a href="/skill_test">Skill Test</a>
+    </li>
+    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+      <a href="/exam">Exam Mode</a>
+    </li>
+    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+      <a href="/">Topic Wise MCQ</a>
+    </li>
+  </ul>
+</li>
+
+         <li className="relative">
+  <button
+    onClick={() => toggleDropdown("download")}
+    className="hover:bg-blue-700 px-3 py-1 rounded flex items-center gap-1"
+  >
+    Download
+    <span
+      className={`transform transition-transform duration-300 ${
+        openDropdown === "download" ? "rotate-180" : "rotate-0"
+      } text-lg`}
+    >
+      ▾
+    </span>
+  </button>
+
+  {/* Dropdown Menu */}
+  <ul
+    className={`absolute left-0 top-full mt-2 bg-white text-black rounded shadow-md min-w-[160px] z-50 transition-all duration-300 origin-top transform ${
+      openDropdown === "download"
+        ? "scale-100 opacity-100"
+        : "scale-95 opacity-0 pointer-events-none"
+    }`}
+  >
+    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+      <a href="/notes">Video Notes</a>
+    </li>
+    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+      <a href="/notes">Pdf Notes</a>
+    </li>
+    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+      <a href="/notes">Syllabus PDF</a>
+    </li>
+  </ul>
+</li>
+
+          <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/about-us">About us</a></li>
+          <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/payment-app">Payment</a></li>
+          <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/contact-us">Contact Us</a></li>
+         <a href="/profile"> <div className="items-center absolute right-40 top-1">
+            <img src="/lo.jpg" className="w-11 h-11 rounded-full border" />
+            <p className="pl-2.5 text-[10px]">view</p>
+          </div></a>
         </ul>
       </nav>
 
-      {/* Mobile Sidebar with Transition */}
+      {/* Mobile Sidebar Navigation */}
       <div
         className={`fixed top-0 right-0 h-full w-[80%] bg-[#290c52] text-white z-50 overflow-y-auto transform transition-transform duration-300 ease-in-out ${
           mobileNavOpen ? "translate-x-0" : "translate-x-full"
@@ -116,49 +166,40 @@ export default function Header() {
           <li className="border-b py-2"><a href="/">HOME</a></li>
 
           <li>
-            <button onClick={() => toggleDropdown("learning")} className="w-full border-b pt-5 text-left py-2 flex justify-between items-center">
-              LEARNING <span>▾</span>
+            <button onClick={() => toggleDropdown("mobileCourse")} className="w-full border-b pt-5 text-left py-2 flex justify-between items-center">
+              <span>COURSE</span> <span className="text-3xl">▾</span>
             </button>
-            {openDropdown === "learning" && (
+            {openDropdown === "mobileCourse" && (
               <ul className="pl-4 space-y-1 pt-4 text-sm text-gray-300">
-                <li>Module 1</li>
-                <li>Module 2</li>
+                <li><a href="/learning">Learning</a></li>
+                <li><a href="/skill_test">Skill Test</a></li>
+                <li><a href="/exam">Exam Mode</a></li>
+                <li><a href="/">Topic Wise MCQ</a></li>
               </ul>
             )}
           </li>
 
           <li>
-            <button onClick={() => toggleDropdown("typing")} className="w-full pt-5 border-b text-left py-2 flex justify-between items-center">
-              <a href="/typing"> Skill Test</a> <span>▾</span>
+            <button onClick={() => toggleDropdown("mobileDownload")} className="w-full border-b pt-5 text-left py-2 flex justify-between items-center">
+              <span>DOWNLOAD</span> <span className="text-3xl">▾</span>
             </button>
-            {openDropdown === "typing" && (
-              <ul className="pl-4 space-y-1 pt-5 text-sm text-gray-300">
-                <li>Typing Test</li>
-                <li>Accuracy Test</li>
+            {openDropdown === "mobileDownload" && (
+              <ul className="pl-4 space-y-1 pt-4 text-sm text-gray-300">
+                <li><a href="/notes">Video Notes</a></li>
+                <li><a href="/notes">Pdf Notes</a></li>
+                <li><a href="/notes">Syllabus PDF</a></li>
               </ul>
             )}
           </li>
 
-          <li className="border-b pt-5 py-2">EXAM MODE</li>
-
-          <li>
-            <button onClick={() => toggleDropdown("notes")} className="w-full pt-5 border-b text-left py-2 flex justify-between items-center">
-              NOTES <span>▾</span>
-            </button>
-            {openDropdown === "notes" && (
-              <ul className="pl-4 space-y-1 pt-5 text-sm text-gray-300">
-                <li>Video Notes</li>
-                <li>PDF Notes</li>
-              </ul>
-            )}
-          </li>
-
-          <li className="border-b pt-5 py-2">MCQ TEST</li>
+          <li className="border-b pt-5 py-2"><a href="/about-us">ABOUT US</a></li>
+          <li className="border-b pt-5 py-2"><a href="/payment-app">PAYMENT</a></li>
+          <li className="border-b pt-5 py-2"><a href="/contact-us">CONTACT US</a></li>
         </ul>
 
-        <div className="flex justify-center gap-4 mt-15 px-4">
+        <div className="justify-center mt-10 px-4">
           <button className="bg-white text-black px-4 py-2 rounded"><a href="/login">Log in</a></button>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded"><a href="/signup">Free Registration</a></button>
+          <button className="bg-blue-500 text-white px-4 py-2 ml-2 rounded"><a href="/signup">Free Registration</a></button>
         </div>
       </div>
 
