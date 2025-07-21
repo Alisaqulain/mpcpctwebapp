@@ -49,7 +49,7 @@ export default function Footer() {
           {/* Developer Credit - Added in a professional way */}
           <div className="mt-4 pt-4 border-t border-gray-700">
             <p className="text-gray-400 text-xs">
-              Developed by <span className="text-yellow-300 font-medium"><a href="https://www.linkedin.com/in/anas-ansari-45147b27a/">Anas Ansari</a></span>
+              Developed by <span className="text-yellow-300 font-medium"><a href="https://robustwebsolution.com/">Robust Web Solution</a></span>
             </p>
           </div>
         </div>
