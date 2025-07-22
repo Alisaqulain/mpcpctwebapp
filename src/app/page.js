@@ -98,21 +98,22 @@ const App = () => {
                 else if (label === "Exam Mode") colorClass = "bg-red-800";
 
                 const card = (
-                  <div
-                    key={label}
-                    className="w-30 h-30 sm:w-72 md:h-64 rounded-xl overflow-hidden shadow-md border-4 md:border-8 border-[#290c52] bg-white cursor-pointer transform transition-transform duration-300 hover:scale-105"
-                  >
-                    <div className="h-22 w-30 md:h-48 md:w-full">
-                      <img
-                        src={img}
-                        alt={`${label} icon`}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <div className={`${colorClass} text-white text-center py-1 md:py-4 text-sm md:text-lg font-semibold md:font-bold`}>
-                      {label}
-                    </div>
-                  </div>
+                <div
+  key={label}
+  className="w-[105%] sm:w-72 h-auto md:h-64 rounded-xl overflow-hidden shadow-md border-4 md:border-8 border-[#290c52] bg-white cursor-pointer transform transition-transform duration-300 hover:scale-105"
+>
+  <div className="h-20 w-full md:h-48 md:w-full">
+    <img
+      src={img}
+      alt={`${label} icon`}
+      className="h-full w-full object-cover"
+    />
+  </div>
+  <div className={`${colorClass} text-white text-center py-1 md:py-4 text-[10px] md:text-lg font-semibold md:font-bold`}>
+    {label}
+  </div>
+</div>
+
                 );
 
                 if (label === "Learning") {
@@ -139,7 +140,7 @@ const App = () => {
               })}
             </div>
 
-              <span className="text-pink-300 font-semibold text-[20px] border-l border-[#290c52] bg-[#290c52] pt-4 md:pt-10 pb-0 md:pb-6 text-center w-full lg:w-48 absolute right-0 lg:right-[-16px] z-10 top-[175px] rounded-tl-lg rounded-tr-lg md:rounded-none lg:top-[-148px]">Welcome Back</span>
+              <span className="text-pink-300 font-semibold text-[20px] border-l border-[#290c52] bg-[#290c52] pt-4 md:pt-10 pb-0 md:pb-6 text-center w-full lg:w-48 absolute right-0 lg:right-[-16px] z-10 top-[155px] rounded-tl-lg rounded-tr-lg md:rounded-none lg:top-[-148px]">Welcome Back</span>
 <div className="w-full lg:w-48 border border-[#290c52] bg-gray-50 shadow-md p-4 space-y-4 py-10 md:py-20 relative lg:absolute lg:right-[-15px] lg:top-0 h-auto md:h-[620px] rounded animate-fadeInUp lg:mt-[-147px]">
   <div className="font-semibold text-pink-300 text-xl text-center mt-0 md:mt-[-10px]">
     <br />

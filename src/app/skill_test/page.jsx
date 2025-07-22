@@ -75,107 +75,119 @@ export default function TypingTutor() {
   return (
     <div className="min-h-screen bg-[#fff] p-4 font-sans">
       {/* Language & Duration */}
-    <div className="grid grid-cols-3 gap-1 md:gap-4">
-        {/* Language Selection */}
-        <div className="bg-[#290c52] p-4 rounded shadow-md text-white">
-          <h2 className="font-bold text-[10px] md:text-lg mb-2 border-b border-white pb-1">1. Select Typing Language</h2>
-          <div className="grid grid-cols-2 gap-2 text-black mb-2">
-            {mainLanguages.map((lang) => (
-              <label key={lang} className="bg-white px-1 md:px-2 py-1 w-12 md:w-auto h-auto md:h-10 rounded flex items-center gap-1">
-                <input
-                  type="radio"
-                  name="mainLanguage"
-                  className="md:w-auto md:h-auto h-5 w-2"
-                  value={lang}
-                  checked={selectedLanguage === lang}
-                  onChange={(e) => {
-                    setSelectedLanguage(e.target.value);
-                    setSelectedSubLanguage("");
-                  }}
-                />
-                <p className="md:text-sm text-[7px]">{lang}</p>
-              </label>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-black">
-            {subLanguages.map((subLang) => {
-              const disabled = selectedLanguage !== "Hindi";
-              return (
-                <label
-                  key={subLang}
-                  className={`${disabled ? "opacity-50 cursor-not-allowed" : ""} bg-white w-12 md:w-auto h-auto md:h-10 px-2 py-1 rounded flex items-center gap-1`}
-                >
-                  <input
-                    type="radio"
-                    name="subLanguage"
-                    className="md:w-auto md:h-auto h-5 w-2"
-                    value={subLang}
-                    disabled={disabled}
-                    checked={selectedSubLanguage === subLang}
-                    onChange={(e) => setSelectedSubLanguage(e.target.value)}
-                  />
-                  <p className="md:text-sm text-[5px]">{subLang}</p>
-                </label>
-              );
-            })}
-          </div>
-        </div>
+      <div className="grid grid-cols-3 gap-1 md:gap-4">
+  {/* Language Selection */}
+  <div className="bg-[#290c52] p-[6px] md:p-4 rounded shadow-md text-white">
+    <h2 className="font-bold text-[9px] md:text-lg mb-2 border-b border-white pb-1">
+      1. Select Typing Language
+    </h2>
+    <div className="grid grid-cols-2 gap-1 text-black mb-2">
+      {mainLanguages.map((lang) => (
+        <label
+          key={lang}
+          className="bg-white px-1 py-1 rounded flex items-center gap-1 w-full"
+        >
+          <input
+            type="radio"
+            name="mainLanguage"
+            className="w-3 h-3"
+            value={lang}
+            checked={selectedLanguage === lang}
+            onChange={(e) => {
+              setSelectedLanguage(e.target.value);
+              setSelectedSubLanguage("");
+            }}
+          />
+          <p className="text-[8px] md:text-sm">{lang}</p>
+        </label>
+      ))}
+    </div>
+    <div className="grid grid-cols-2 gap-1 text-black">
+      {subLanguages.map((subLang) => {
+        const disabled = selectedLanguage !== "Hindi";
+        return (
+          <label
+            key={subLang}
+            className={`${
+              disabled ? "opacity-50 cursor-not-allowed" : ""
+            } bg-white px-1 py-1 rounded flex items-center gap-1 w-full`}
+          >
+            <input
+              type="radio"
+              name="subLanguage"
+              className="w-3 h-3"
+              value={subLang}
+              disabled={disabled}
+              checked={selectedSubLanguage === subLang}
+              onChange={(e) => setSelectedSubLanguage(e.target.value)}
+            />
+            <p className="text-[7px] md:text-sm">{subLang}</p>
+          </label>
+        );
+      })}
+    </div>
+  </div>
 
-        {/* Duration */}
-        <div className="bg-[#290c52] p-4 rounded shadow-md text-white">
-          <h2 className="font-bold text-[10px] md:text-lg mb-2 border-b border-white pb-1">2. Select Duration in Minutes</h2>
-          <div className="grid grid-cols-3 gap-2 mt-6">
-            {durations.map((time) => (
-             <label
-  key={time}
-  className={`flex flex-col md:flex-row items-center md:justify-center gap-0 md:gap-1 px-2 py-1 rounded font-medium mt-[-5] md:mt-0 cursor-pointer bg-white h-10 w-8 md:h-auto md:w-auto text-black border border-gray-400 ${
-    duration === time ? "bg-blue-200" : ""
-  }`}
->
-  <input
-    type="radio"
-    name="duration"
-    value={time}
-    onChange={() => setDuration(time)}
-    checked={duration === time}
-    className="w-3 h-3"
-  />
-  <span className="text-[10px] md:text-lg">{time}M</span>
-</label>
+  {/* Duration */}
+  <div className="bg-[#290c52] p-[6px] md:p-4 rounded shadow-md text-white">
+    <h2 className="font-bold text-[9px] md:text-lg mb-2 border-b border-white pb-1">
+      2. Select Duration in Minutes
+    </h2>
+    <div className="grid grid-cols-3 gap-1 mt-4">
+      {durations.map((time) => (
+        <label
+          key={time}
+          className={`px-1 py-1 rounded text-center font-medium cursor-pointer bg-white text-black border border-gray-400 text-[8px] md:text-base ${
+            duration === time ? "bg-blue-200" : ""
+          }`}
+        >
+          <input
+            type="radio"
+            name="duration"
+            value={time}
+            className="mr-1"
+            onChange={() => setDuration(time)}
+            checked={duration === time}
+          />
+          {time}M
+        </label>
+      ))}
+    </div>
+  </div>
 
-            ))}
-          </div>
-        </div>
-
-        {/* Backspace */}
-        <div className="bg-[#290c52] p-4 rounded shadow-md text-white">
-          <h2 className="font-bold text-[10px] md:text-lg mb-2 border-b border-white pb-1">3. Backspace</h2>
-          <div className="grid grid-cols-2 gap-2 mt-6">
-            {backspaceOptions.map((option) => (
-              <label
-                key={option}
-                className={`px-2 py-1 rounded text-center font-medium cursor-pointer bg-white text-black border border-gray-400 ${backspace === option ? "bg-blue-200" : ""}`}
-              >
-                <input
-                  type="radio"
-                  name="backspace"
-                  value={option}
-                  className="mr-1"
-                  onChange={() => setBackspace(option)}
-                  checked={backspace === option}
-                />
-                {option}
-              </label>
-            ))}
-          </div>
-        </div>
-      </div>
+  {/* Backspace */}
+  <div className="bg-[#290c52] p-[6px] md:p-4 rounded shadow-md text-white">
+    <h2 className="font-bold text-[11px] md:text-lg mb-2 border-b border-white pb-1">
+      3. Backspace
+    </h2>
+    <div className="grid grid-cols-2 gap-1 mt-4">
+      {backspaceOptions.map((option) => (
+        <label
+          key={option}
+          className={`px-1 py-1 rounded text-center font-medium cursor-pointer bg-white text-black border border-gray-400 text-[8px] md:text-base ${
+            backspace === option ? "bg-blue-200" : ""
+          }`}
+        >
+          <input
+            type="radio"
+            name="backspace"
+            value={option}
+            className="mr-1"
+            onChange={() => setBackspace(option)}
+            checked={backspace === option}
+          />
+          {option}
+        </label>
+      ))}
+    </div>
+  </div>
+</div>
 
       {/* Exercise Selection & Preview */}
       <div className="flex md:w-auto min-h-[70vh] font-serif bg-white rounded shadow overflow-hidden">
         {/* Sidebar */}
         <div className="w-[40%] md:w-1/4 border-r border-gray-300 bg-[#fff] p-3 mt-1 md:mt-0">
-          <h3 className="text-sm font-semibold mb-1">4. Select Exercise</h3>
+          <h3 className="text-[10px] md:text-sm font-semibold mb-1">4. Select Exercise</h3>
           <div
             className="h-84 md:h-64 overflow-y-scroll pr-1 border border-gray-300 rounded bg-white"
             style={{
@@ -215,19 +227,19 @@ export default function TypingTutor() {
           <div className="mt-4 flex flex-col gap-2">
             <button
               onClick={() => setShowModal(true)}
-              className="bg-[#290c52] cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-blue-500"
+              className="bg-[#290c52] cursor-pointer text-white text-[10px] md:text-sm px-2 py-1 rounded hover:bg-blue-500"
             >
               Add Exercise(+)
             </button>
             <button
               onClick={handleDeleteExercise}
-              className="bg-red-500 cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-red-600"
+              className="bg-red-500 cursor-pointer text-white text-[10px] md:text-sm px-2 py-1 rounded hover:bg-red-600"
             >
               Delete Exercise(-)
             </button>
             <button
               onClick={handleLoadExercise}
-              className="bg-pink-500 cursor-pointer text-white text-sm px-2 py-1 rounded hover:bg-yellow-600"
+              className="bg-pink-500 cursor-pointer text-white text-[10px] md:text-sm px-2 py-1 rounded hover:bg-yellow-600"
             >
               Load Exercise
             </button>
@@ -244,13 +256,13 @@ export default function TypingTutor() {
         {/* Preview */}
         <div className="flex-1 p-4">
           <div className="flex justify-between items-center mb-2">
-            <h2 className="font-semibold text-sm">Exercise</h2>
+            <h2 className="font-semibold text-[10px] md:text-sm">Exercise</h2>
           </div>
-          <div className="border border-gray-300 p-3 text-sm leading-6 h-[50vh] overflow-y-scroll bg-[#fefefe] rounded">
+          <div className="border border-gray-300 p-3 text-[10px] md:text-sm leading-6 h-[50vh] overflow-y-scroll bg-[#fefefe] rounded">
             Brexit was quoted as being the financial equivalent of doomsday for
             Britain's economy...
           </div>
-          <div className="mt-8 text-sm md:text-md text-gray-700">
+          <div className="mt-8 text-[6px] md:text-md text-gray-700">
             <p>
               Total Characters: <b>5067</b>
               <span className="pl-10">Total Words: <b>848</b></span>
@@ -262,13 +274,13 @@ export default function TypingTutor() {
       {/* Exam Selector */}
       <div className="flex border text-sm font-serif w-full max-w-8xl mx-auto mt-4 rounded shadow overflow-hidden bg-white">
         <div className="w-1/4 border-r p-2 bg-[#fff]">
-          <h3 className="text-gray-800 font-semibold mb-2">5. Select Exam</h3>
+          <h3 className="text-gray-800 font-semibold mb-2 text-[10px] md:text-sm">5. Select Exam</h3>
           <ul className="space-y-1">
             {exams.map((exam) => (
               <li
                 key={exam}
                 onClick={() => setSelectedExam(exam)}
-                className={`cursor-pointer px-2 py-1 rounded-l ${
+                className={`cursor-pointer px-2 py-1 rounded-l text-[10px] md:text-sm ${
                   selectedExam === exam
                     ? "text-red-600 font-semibold border-l-4 border-red-500 bg-white"
                     : "text-blue-700 hover:bg-gray-100"
@@ -282,14 +294,14 @@ export default function TypingTutor() {
 
         <div className="flex-1 flex flex-col justify-between p-3 bg-white relative overflow-auto">
           <div className="flex flex-row justify-between items-start gap-4">
-            <h3 className="font-semibold text-gray-800 mb-2 text-lg">
+            <h3 className="font-semibold text-gray-800 mb-2 text-sm md:text-lg">
               Exam Description
             </h3>
-            <button className="bg-green-500 text-white w-[300px] px-4 py-1 mx-auto cursor-pointer rounded text-lg shadow hover:bg-green-600 transition-colors">
+            <button className="bg-green-500 text-white w-[300px] px-4 py-1 mx-auto cursor-pointer rounded text-sm md:text-lg shadow hover:bg-green-600 transition-colors">
               <a href="/typing" className="block w-full">Start Test</a>
             </button>
           </div>
-          <div className="text-green-700 leading-relaxed text-justify mt-1 text-sm  md:overflow-auto md:text-sm">
+          <div className="text-green-700 leading-relaxed text-justify mt-1 text-[10px]  md:overflow-auto md:text-sm">
             {description}
           </div>
         </div>

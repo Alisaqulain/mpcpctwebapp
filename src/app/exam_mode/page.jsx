@@ -230,7 +230,7 @@ export default function CPCTPage() {
               <span>{showSectionDropdown ? "▲" : "▼"}</span>
             </button>
             {showSectionDropdown && (
-              <div className="absolute z-10 w-full bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-20 w-full bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
                 {Object.keys(questions).map((sec) => (
                   <button
                     key={sec}
@@ -295,53 +295,57 @@ export default function CPCTPage() {
 
 
         {/* Question Panel */}
-        <div className="flex-grow p-4 overflow-auto bg-white-50 mt-[-30] md:mt-0">
-          <div className="bg-[#290c52] text-white text-sm px-4 py-3 rounded-t flex justify-between flex-wrap gap-2">
-            <span>Question Type: MCQ</span>
-            <div className="flex items-center gap-2">
-              <p>View in:</p>
-              <select className="text-black text-xs bg-white">
-                <option value="en">English</option>
-                <option value="hi">Hindi</option>
-              </select>
-            </div>
-          </div>
+      <div className="flex-grow p-4 overflow-auto bg-white-50 mt-0 md:mt-0 relative">
+  {/* Fixed Top Bar */}
+  <div className="bg-[#290c52] text-white text-sm px-4 py-3 rounded-t flex justify-between flex-wrap gap-2 sticky top-[-20px] md:top-0 z-10">
+    <span>Question Type: MCQ</span>
+    <div className="flex items-center gap-2">
+      <p>View in:</p>
+      <select className="text-black text-xs bg-white">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+      </select>
+    </div>
+  </div>
 
-          <div className="border border-gray-300 rounded-b">
-            <div className="bg-white-50 px-4 py-3 border-b text-sm font-semibold flex flex-col sm:flex-row justify-between">
-              <span>Question No. 1</span>
-              <span className="mt-1 sm:mt-0">Marks for correct answer: 1 | Negative Marks: <span className="text-red-500">0</span></span>
-            </div>
+  {/* Scrollable Content */}
+  <div className="border border-gray-300 rounded-b">
+    <div className="bg-white-50 px-4 py-3 border-b text-sm font-semibold flex flex-col sm:flex-row justify-between">
+      <span>Question No. 1</span>
+      <span className="mt-1 sm:mt-0">
+        Marks for correct answer: 1 | Negative Marks: <span className="text-red-500">0</span>
+      </span>
+    </div>
 
-            {section === "READING COMPREHENSION" ? (
-              <div className="flex flex-col lg:flex-row p-4 gap-x-6 gap-y-10">
-                <div className="lg:w-2/3 text-sm border-r pr-4 max-h-72 overflow-y-auto">
-                  <h3 className="font-bold mb-2">Passage:</h3>
-                  <p>{questions[section].passage}</p>
-                </div>
-                <div className="lg:w-1/3 text-xl">
-                  <p className="mb-4">{questions[section].question}</p>
-                  {questions[section].options.map((opt, i) => (
-                    <label key={i} className="flex items-start gap-x-2 gap-y-6">
-                      <input type="radio" name="q1" className="mt-1" />
-                      <span>{opt}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="p-4 text-xl mb-28">
-                <p className="mb-4">{questions[section].question}</p>
-                {questions[section].options.map((opt, i) => (
-                  <label key={i} className="flex items-start gap-2">
-                    <input type="radio" name="q1" className="mt-1" />
-                    <span>{opt}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
+    {section === "READING COMPREHENSION" ? (
+      <div className="flex flex-col lg:flex-row p-4 gap-x-6 gap-y-10">
+        <div className="lg:w-2/3 text-sm border-r pr-4 max-h-72 overflow-y-auto">
+          <h3 className="font-bold mb-2">Passage:</h3>
+          <p>{questions[section].passage}</p>
         </div>
+        <div className="lg:w-1/3 text-xl">
+          <p className="mb-4">{questions[section].question}</p>
+          {questions[section].options.map((opt, i) => (
+            <label key={i} className="flex items-start gap-x-2 gap-y-6">
+              <input type="radio" name="q1" className="mt-1" />
+              <span>{opt}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+    ) : (
+      <div className="p-4 text-md md:text-xl mb-28">
+        <p className="mb-4">{questions[section].question}</p>
+        {questions[section].options.map((opt, i) => (
+          <label key={i} className="flex items-start gap-2">
+            <input type="radio" name="q1" className="mt-1" />
+            <span>{opt}</span>
+          </label>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
 
         {/* Footer */}
         <div className="flex justify-between items-center bg-white-50 px-4 py-3 border-t flex-wrap gap-2">
@@ -361,7 +365,7 @@ export default function CPCTPage() {
               Save & Next
             </button>
           </div>
-          <button className="bg-green-800 hover:bg-cyan-700 text-white px-12 py-2 ml-2 text-[13px] rounded w-[80%] md:hidden">
+          <button className="bg-green-800 hover:bg-cyan-700 text-white px-12 py-2 ml-2 text-[13px] rounded w-full md:hidden">
   <a href="/exam/exam-result">Submit Section</a>
 </button>
 

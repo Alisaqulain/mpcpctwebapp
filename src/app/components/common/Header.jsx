@@ -22,7 +22,7 @@ export default function Header() {
           <img src="/logor.png" alt="CPCT Logo" className="w-50 ml-35" />
         </div>
 
-        <div className="md:absolute inset-0 flex flex-col justify-center items-center text-center px-4 md:ml-0 ml-8">
+        <div className="md:absolute inset-0 flex flex-col justify-center items-center text-center px-4 md:ml-0 ml-11">
           <h1
             className="text-3xl md:text-7xl font-extrabold uppercase md:mt-0 leading-[1.2] text-transparent bg-clip-text bg-center bg-cover"
             style={{
@@ -31,7 +31,7 @@ export default function Header() {
           >
             MPCPCT
           </h1>
-         <p className="text-sm md:text-3xl text-gray-600 md:mt-0 font-semibold">
+<p className="text-[12px] sm:text-sm md:text-2xl lg:text-3xl text-gray-600 font-semibold">
   <span className="hidden md:inline">(</span>
   To Help in typing & computer proficiency
   <span className="hidden md:inline">)</span>
@@ -45,7 +45,7 @@ export default function Header() {
       {/* Mobile Nav Toggle */}
       <div className="md:hidden bg-[#290c52] flex justify-between items-center px-4 py-2">
         <span className="text-white font-medium"><a href="/">Home </a></span>
-         <a href="/profile"><div className="items-center pl-60">
+         <a href="/profile"><div className="items-center pl-50">
             <img src="/lo.jpg" className="w-8 h-8 rounded-full border" />
             {/* <p className="pl-2.5 text-[10px]">view</p> */}
           </div></a>
