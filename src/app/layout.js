@@ -19,7 +19,7 @@ export default function RootLayout({ children }) {
   const pathname = usePathname();
 
   // Add all routes where you want to hide Header and Footer
-  const hideLayout = pathname?.startsWith("/exam") || pathname?.startsWith("/tips/") || pathname?.startsWith("/keyboard") || pathname?.startsWith("/hindi-keyboard");
+  const hideLayout = pathname?.startsWith("/exam") || pathname?.startsWith("/tips/") || pathname?.startsWith("/keyboard") || pathname?.startsWith("/hindi-keyboard") || pathname?.startsWith("/typing");
 
   return (
     <html lang="en">

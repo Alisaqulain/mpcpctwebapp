@@ -119,15 +119,23 @@ export default function TypingTutor() {
   const decreaseFont = () => setFontSize((prev) => Math.max(prev - 2, 10));
 
   return (
-    <div className="min-h-screen bg-[#290c52] bg-[url('/bg.jpg')] bg-cover bg-center bg-no-repeat px-4 py-6 md:px-14 md:py-12 md:mx-8 md:my-8 rounded-[0px] md:rounded-[100px]">
+    <div className="min-h-screen bg-[#290c52] bg-[url('/bg.jpg')] mt-30 md:mt-0  bg-cover bg-center bg-no-repeat px-4 py-6 md:px-14 md:py-12 md:mx-8 md:my-8 rounded-[0px] md:rounded-[100px]">
       <div className="max-w-7xl mx-auto mt-30 md:mt-15">
-        <button className="absolute right-9 md:right-22 top-65 md:top-86 border border-gray-600 text-white bg-red-500 px-4 py-1 rounded-md">
-          <a href="/skill_test">close</a>
-        </button>
+       <button className="hidden md:absolute md:right-22 md:top-6 border border-gray-600 text-white bg-red-500 px-4 py-1 rounded-md md:block">
+  <a href="/skill_test">close</a>
+</button>
+
 
         <div className="flex flex-col-reverse lg:flex-row gap-6">
+          
           {/* Typing Area */}
-          <div className="w-[100%] lg:w-[110%]">
+          <div className="w-[105%] lg:w-[110%]">
+          <p className="block lg:hidden text-md mb-15 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 text-center font-bold">
+  Typing Tutor
+  <br />
+  <span className="text-xs font-normal text-white">(Type the words as they appear below)</span>
+</p>
+
             <div className="bg-white p-4 mr-10 md:p-6 rounded-xl shadow-lg ml-5 mt-[-25]">
               <div className="text-sm leading-relaxed mb-4 overflow-auto min-h-[200px] max-h-[250px] mt-4 break-words font-sans">
                 {renderColoredWords()}
@@ -159,18 +167,22 @@ export default function TypingTutor() {
 
           {/* Sidebar */}
           <div className="w-full lg:w-[20%] text-white p-3 fixed top-0 mt-[-15] left-0 z-50 bg-[#290c52] bg-[url('/bg.jpg')] bg-cover bg-top bg-no-repeat lg:static lg:bg-none lg:bg-transparent">
+           <button className="absolute md:hidden right-3 top-5 md:right-22 md:top-86 border border-gray-600 text-white bg-red-500 px-4 py-1 rounded-md ">
+  <a href="/skill_test">close</a>
+</button>
+
             <div className="flex flex-col items-center space-y-1">
               <img
                 src="/lo.jpg"
                 alt="User"
-                className="w-30 h-25 rounded-md border-2 border-white"
+                className="w-20 h-20 md:w-30 md:h-25 rounded-md border-2 border-white"
               />
               <p className="font-semibold text-xs">Anas Ansari</p>
               <div className="w-24 h-9 rounded-lg overflow-hidden mx-auto text-center mt-2 shadow-[0_1px_8px_white,0_2px_6px_silver,0_4px_10px_rgba(0,0,0,0.7)]">
                 <div className="bg-black text-white text-[10px] font-semibold py-[1px]">Time</div>
                 <div className="bg-white text-black text-sm font-bold">{formatClock(elapsedTime)}</div>
               </div>
-              <div className="grid grid-cols-2 gap-y-3 mt-2 gap-x-4 md:gap-x-15 mr-0 md:mr-10 w-full text-center">
+              <div className="grid grid-cols-2 gap-y-3 mt-2 gap-x-4 md:gap-x-15 mr-0 md:mr-10 w-[70%] md:w-full text-center">
                 {[{ label: "Correct", value: correctWords.length, color: "text-green-600" },
                   { label: "Wrong", value: wrongWords.length, color: "text-red-500" },
                   { label: "Total", value: words.length, color: "text-[#290c52]" },
@@ -214,17 +226,24 @@ export default function TypingTutor() {
                 </div>
               </div>
 
-              <div className="w-full mt-2">
-                <p className="text-center text-sm mb-1">Font Size</p>
-                <div className="flex justify-center gap-3">
-                  <button onClick={decreaseFont} className="bg-white text-black border-3 cursor-pointer border-black px-5 py-[2px] text-xs rounded-md">
-                    A -
-                  </button>
-                  <button onClick={increaseFont} className="bg-white text-black cursor-pointer border-3 border-black px-5 py-[2px] text-xs rounded-md">
-                    A +
-                  </button>
-                </div>
-              </div>
+             <div className="hidden md:flex flex-col items-center justify-center gap-1">
+  <p className="text-center text-sm mb-1">Font Size</p>
+  <div className="flex justify-center gap-3">
+    <button
+      onClick={decreaseFont}
+      className="bg-white text-black border-3 cursor-pointer border-black px-5 py-[2px] text-xs rounded-md"
+    >
+      A -
+    </button>
+    <button
+      onClick={increaseFont}
+      className="bg-white text-black cursor-pointer border-3 border-black px-5 py-[2px] text-xs rounded-md"
+    >
+      A +
+    </button>
+  </div>
+</div>
+
             </div>
           </div>
           {/* End Sidebar */}
