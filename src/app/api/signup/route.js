@@ -1,11 +1,20 @@
-
-import clientPromise from "../../../lib/mongodb";
-import bcrypt from "bcrypt";
+// /src/app/api/signup/route.js
 import { NextResponse } from "next/server";
+import dbConnect from "@/lib/db";
+import User from "@/lib/models/User";
+import bcrypt from "bcryptjs";
+import { v4 as uuidv4 } from "uuid";
+import cloudinary from "@/lib/cloudinary";
+import jwt from "jsonwebtoken";
 
-export async function POST(request) {
+const JWT_SECRET = process.env.JWT_SECRET || "secret123"; // keep in .env
+
+export async function POST(req) {
   try {
-    const formData = await request.formData();
+    await dbConnect();
+
+    const formData = await req.formData();
+
     const name = formData.get("name");
     const phoneNumber = formData.get("phoneNumber");
     const email = formData.get("email");
@@ -13,112 +22,78 @@ export async function POST(request) {
     const rePassword = formData.get("rePassword");
     const states = formData.get("states");
     const city = formData.get("city");
-    const profile = formData.get("profile");
+    const file = formData.get("profile");
 
-    const errors = {};
-
-    if (!name || !name.trim()) {
-      errors.name = "Name is required";
+    if (!name || !phoneNumber || !email || !password || !states || !city || !file) {
+      return NextResponse.json({ error: "All fields are required." }, { status: 400 });
     }
 
-    if (!phoneNumber || !phoneNumber.trim()) {
-      errors.phoneNumber = "Phone number is required";
-    } else if (!/^\d{10}$/.test(phoneNumber)) {
-      errors.phoneNumber = "Phone number must be 10 digits";
+    if (password !== rePassword) {
+      return NextResponse.json({ error: "Passwords do not match." }, { status: 400 });
     }
 
-    if (!email || !email.trim()) {
-      errors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = "Please enter a valid email address";
+    const existing = await User.findOne({ $or: [{ email }, { phoneNumber }] });
+    if (existing) {
+      return NextResponse.json({ error: "Email or phone already exists." }, { status: 400 });
     }
 
-    if (!password) {
-      errors.password = "Password is required";
-    } else if (password.length < 8) {
-      errors.password = "Password must be at least 8 characters";
-    }
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-    if (!rePassword) {
-      errors.rePassword = "Please re-enter your password";
-    } else if (password !== rePassword) {
-      errors.rePassword = "Passwords do not match";
-    }
-
-    if (!states) {
-      errors.states = "State is required";
-    }
-
-    if (!city || !city.trim()) {
-      errors.city = "City is required";
-    }
-
-    if (!profile) {
-      errors.profile = "Profile picture is required";
-    }
-
-    if (Object.keys(errors).length > 0) {
-      return NextResponse.json({ errors }, { status: 400 });
-    }
-
-    const client = await clientPromise;
-    const db = client.db("testdb");
-    const usersCollection = db.collection("users");
-
-    const existingUser = await usersCollection.findOne({
-      $or: [{ phoneNumber }, { email }],
+    const uploadResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream({ resource_type: "image" }, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      }).end(buffer);
     });
-    if (existingUser) {
-      if (existingUser.phoneNumber === phoneNumber) {
-        errors.phoneNumber = "Phone number already exists";
-      }
-      if (existingUser.email === email) {
-        errors.email = "Email already exists";
-      }
-      return NextResponse.json({ errors }, { status: 400 });
-    }
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const imageUrl = uploadResult.secure_url;
 
-    const profilePath = profile ? `/uploads/${profile.name}` : null;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = {
-      name: name.trim(),
-      phoneNumber: phoneNumber.trim(),
-      email: email.trim().toLowerCase(),
+    const newUser = new User({
+      name,
+      phoneNumber,
+      email,
       password: hashedPassword,
       states,
-      city: city.trim(),
-      profile: profilePath,
-      createdAt: new Date(),
-    };
+      city,
+      profileUrl: imageUrl,
+    });
 
-    const result = await usersCollection.insertOne(user);
+    await newUser.save();
 
-    return NextResponse.json(
+    // ✅ Generate JWT
+    const token = jwt.sign(
       {
-        message: "Account created successfully",
-        userId: result.insertedId,
-        phone: phoneNumber,
-        password,
+        id: newUser._id,
+        phoneNumber: newUser.phoneNumber,
+        email: newUser.email,
       },
-      { status: 201 }
+      JWT_SECRET,
+      { expiresIn: "7d" }
     );
-  } catch (error) {
-    console.error("Error in signup API:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
 
-export async function GET() {
-  try {
-    const client = await clientPromise;
-    const db = client.db("testdb");
-    await db.command({ ping: 1 });
-    return NextResponse.json({ message: "MongoDB connection successful" });
-  } catch (error) {
-    console.error("MongoDB connection error:", error);
-    return NextResponse.json({ error: "MongoDB connection failed" }, { status: 500 });
+    // ✅ Set cookie
+    const response = NextResponse.json({
+      message: "Signup successful and logged in",
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        phone: newUser.phoneNumber,
+      },
+    });
+
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: "/",
+    });
+
+    return response;
+
+  } catch (err) {
+    console.error("Signup error:", err);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

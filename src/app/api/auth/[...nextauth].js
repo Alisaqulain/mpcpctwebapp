@@ -1,38 +1,34 @@
-
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import clientPromise from "../../../../lib/mongodb";
-import bcrypt from "bcrypt";
-import { ObjectId } from "mongodb";
+import dbConnect from "@/lib/db";
+import User from "@/lib/models/User";
+import bcrypt from "bcryptjs";
 
 export const authOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        phone: { label: "Phone Number", type: "tel" },
+        phone: { label: "Phone", type: "text", placeholder: "9999999999" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.phone || !credentials?.password) {
-          throw new Error("Phone number and password are required");
-        }
+        await dbConnect();
 
-        const client = await clientPromise;
-        const db = client.db("testdb");
-        const user = await db.collection("users").findOne({ phoneNumber: credentials.phone });
+        const user = await User.findOne({ phoneNumber: credentials.phone });
 
         if (!user) {
-          throw new Error("No user found with this phone number");
+          throw new Error("Phone number not found");
         }
 
         const isValid = await bcrypt.compare(credentials.password, user.password);
+
         if (!isValid) {
           throw new Error("Invalid password");
         }
 
         return {
-          id: user._id.toString(),
+          id: user._id,
           name: user.name,
           email: user.email,
           phone: user.phoneNumber,
@@ -43,10 +39,15 @@ export const authOptions = {
   session: {
     strategy: "jwt",
   },
+  pages: {
+    signIn: "/login",
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
         token.phone = user.phone;
       }
       return token;
@@ -54,16 +55,14 @@ export const authOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id;
+        session.user.name = token.name;
+        session.user.email = token.email;
         session.user.phone = token.phone;
       }
       return session;
     },
   },
-  pages: {
-    signIn: "/login",
-    error: "/login",
-  },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "default_secret",
 };
 
 const handler = NextAuth(authOptions);

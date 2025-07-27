@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.7.0",
     "geist": "^1.4.2",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.513.0",
     "mongodb": "^6.17.0",
     "mongoose": "^8.15.1",

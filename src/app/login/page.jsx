@@ -1,8 +1,6 @@
-
 "use client";
 
 import React, { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -35,18 +33,23 @@ export default function LoginPage() {
     }
 
     try {
-      const result = await signIn("credentials", {
-        redirect: false,
-        phone,
-        password,
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // ✅ KEY FIX HERE: use phoneNumber instead of phone
+        body: JSON.stringify({ phoneNumber: phone, password }),
       });
 
-      if (result?.error) {
-        setError("Invalid credentials. Please try again.");
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Login failed.");
         setIsLoading(false);
       } else {
         setSuccess("Login successful!");
-        router.push("/dashboard");
+        router.push("/dashboard"); // ✅ Or wherever your app should go
       }
     } catch (err) {
       setError("Something went wrong. Please try again.");
@@ -67,13 +70,16 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Phone Input */}
           <div className="relative">
             <input
               type="tel"
               id="phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className={`px-4 py-3 w-full bg-transparent border-2 ${error && !phone ? "border-red-500" : "border-gray-600"} rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300`}
+              className={`peer px-4 py-3 w-full bg-transparent border-2 ${
+                error && !phone ? "border-red-500" : "border-gray-600"
+              } rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300`}
               placeholder="Phone Number"
               required
               pattern="[0-9]{10}"
@@ -81,26 +87,29 @@ export default function LoginPage() {
             />
             <label
               htmlFor="phone"
-              className="absolute left-3 -top-2.5 bg-transparent text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
+              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
             >
               Phone Number
             </label>
           </div>
 
+          {/* Password Input */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`px-4 py-3 w-full bg-transparent border-2 ${error && !password ? "border-red-500" : "border-gray-600"} rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300 pr-12`}
+              className={`peer px-4 py-3 w-full bg-transparent border-2 ${
+                error && !password ? "border-red-500" : "border-gray-600"
+              } rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300 pr-12`}
               placeholder="Password"
               required
               aria-describedby="password-error"
             />
             <label
               htmlFor="password"
-              className="absolute left-3 -top-2.5 bg-transparent text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
+              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
             >
               Password
             </label>
@@ -114,6 +123,7 @@ export default function LoginPage() {
             </button>
           </div>
 
+          {/* Bottom Links */}
           <div className="flex justify-between items-center text-sm font-medium">
             <div className="flex items-center gap-2">
               <p className="text-gray-600">No account?</p>
@@ -132,6 +142,7 @@ export default function LoginPage() {
             </a>
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
@@ -168,6 +179,7 @@ export default function LoginPage() {
           </button>
         </form>
 
+        {/* Feedback messages */}
         {error && (
           <p
             className="mt-4 text-center text-sm text-red-600 animate-fade"
@@ -177,13 +189,11 @@ export default function LoginPage() {
           </p>
         )}
         {success && (
-          <p
-            className="mt-4 text-center text-sm text-green-600 animate-fade"
-            >
+          <p className="mt-4 text-center text-sm text-green-600 animate-fade">
             {success}
-            </p>
-          )}
+          </p>
+        )}
       </div>
     </div>
   );
-};
+}
