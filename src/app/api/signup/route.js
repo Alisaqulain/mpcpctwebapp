@@ -1,11 +1,10 @@
 // /src/app/api/signup/route.js
 import { NextResponse } from "next/server";
+export const runtime = "nodejs";
 import dbConnect from "@/lib/db";
 import User from "@/lib/models/User";
 import bcrypt from "bcryptjs";
-import { v4 as uuidv4 } from "uuid";
 import cloudinary from "@/lib/cloudinary";
-import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret123"; // keep in .env
 
@@ -24,8 +23,8 @@ export async function POST(req) {
     const city = formData.get("city");
     const file = formData.get("profile");
 
-    if (!name || !phoneNumber || !email || !password || !states || !city || !file) {
-      return NextResponse.json({ error: "All fields are required." }, { status: 400 });
+    if (!name || !phoneNumber || !email || !password || !states || !city) {
+      return NextResponse.json({ error: "All fields except profile are required." }, { status: 400 });
     }
 
     if (password !== rePassword) {
@@ -37,16 +36,43 @@ export async function POST(req) {
       return NextResponse.json({ error: "Email or phone already exists." }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    let imageUrl = undefined;
+    try {
+      const hasCloudinaryConfig = !!(
+        process.env.CLOUDINARY_CLOUD_NAME &&
+        process.env.CLOUDINARY_API_KEY &&
+        process.env.CLOUDINARY_API_SECRET
+      );
 
-    const uploadResult = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream({ resource_type: "image" }, (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
-      }).end(buffer);
-    });
-
-    const imageUrl = uploadResult.secure_url;
+      const isValidFile = file && typeof file.arrayBuffer === "function" && (file.size === undefined || file.size > 0);
+      if (hasCloudinaryConfig && file && typeof file.arrayBuffer === "function") {
+        console.log("📂 Uploading file:", file.name, file.type, file.size);
+      
+        const buffer = Buffer.from(await file.arrayBuffer());
+      
+        const uploadResult = await new Promise((resolve, reject) => {
+          cloudinary.uploader
+            .upload_stream(
+              { resource_type: "auto", folder: "profiles" }, // auto handles image/pdf/video
+              (err, result) => {
+                if (err) {
+                  console.error("❌ Cloudinary error:", err);
+                  reject(err);
+                } else {
+                  console.log("✅ Uploaded:", result.secure_url);
+                  resolve(result);
+                }
+              }
+            )
+            .end(buffer);
+        });
+      
+        imageUrl = uploadResult.secure_url;
+      }
+      
+    } catch (uploadErr) {
+      console.warn("Profile upload failed, continuing without image:", uploadErr?.message || uploadErr);
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -62,35 +88,16 @@ export async function POST(req) {
 
     await newUser.save();
 
-    // ✅ Generate JWT
-    const token = jwt.sign(
-      {
-        id: newUser._id,
-        phoneNumber: newUser.phoneNumber,
-        email: newUser.email,
-      },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    // ✅ Set cookie
-    const response = NextResponse.json({
-      message: "Signup successful and logged in",
+    // Return success response without setting cookie
+    // The login API will handle setting the JWT token
+    return NextResponse.json({
+      message: "Signup successful",
       user: {
         id: newUser._id,
         name: newUser.name,
         phone: newUser.phoneNumber,
       },
     });
-
-    response.cookies.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/",
-    });
-
-    return response;
 
   } catch (err) {
     console.error("Signup error:", err);

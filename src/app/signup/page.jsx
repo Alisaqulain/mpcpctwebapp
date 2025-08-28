@@ -3,11 +3,11 @@
 
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const SignUpPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [showRePassword, setShowRePassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,6 +32,9 @@ const SignUpPage = () => {
     general: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  // Get the redirect URL from query parameters
+  const redirectUrl = searchParams.get("redirect") || "/profile";
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -139,18 +142,25 @@ const SignUpPage = () => {
         return;
       }
 
-      const signInResult = await signIn("credentials", {
-        redirect: false,
-        phone: result.phone,
-        password: formData.password,
+      // After successful signup, automatically log in the user
+      const loginResponse = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          phoneNumber: formData.phoneNumber, 
+          password: formData.password 
+        }),
       });
 
-      if (signInResult?.error) {
-        setErrors({ general: "Failed to sign in after signup. Please try logging in manually." });
+      if (!loginResponse.ok) {
+        setErrors({ general: "Account created successfully! Please log in manually." });
         setIsLoading(false);
         return;
       }
 
+      // Clear form data
       setFormData({
         name: "",
         phoneNumber: "",
@@ -161,7 +171,12 @@ const SignUpPage = () => {
         city: "",
         profile: null,
       });
-      router.push("/dashboard");
+
+      // Dispatch custom event to notify other components about login
+      window.dispatchEvent(new CustomEvent('authStateChanged', { detail: { isAuthenticated: true } }));
+
+      // Redirect to the intended page
+      router.push(redirectUrl);
     } catch (error) {
       console.error("Error submitting form:", error);
       setErrors({ general: "An error occurred. Please try again." });
@@ -486,7 +501,7 @@ const SignUpPage = () => {
           <div className="mt-6 text-center text-sm font-medium">
             <span className="text-gray-600">Already have an account?</span>{" "}
             <a
-              href="/login"
+                              href={`/login${redirectUrl !== "/profile" ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`}
               className="text-indigo-600 hover:text-indigo-800 hover:underline transition-all duration-300"
             >
               Log In

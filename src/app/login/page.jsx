@@ -1,17 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Get the redirect URL from query parameters
+  const redirectUrl = searchParams.get("redirect") || "/profile";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,7 +53,10 @@ export default function LoginPage() {
         setIsLoading(false);
       } else {
         setSuccess("Login successful!");
-        router.push("/dashboard"); // ✅ Or wherever your app should go
+        // Dispatch custom event to notify other components about login
+        window.dispatchEvent(new CustomEvent('authStateChanged', { detail: { isAuthenticated: true } }));
+        // Redirect to the intended page or profile
+        router.push(redirectUrl);
       }
     } catch (err) {
       setError("Something went wrong. Please try again.");
@@ -128,7 +135,7 @@ export default function LoginPage() {
             <div className="flex items-center gap-2">
               <p className="text-gray-600">No account?</p>
               <a
-                href="/signup"
+                href={`/signup${redirectUrl !== "/profile" ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`}
                 className="text-blue-600 hover:text-blue-400 hover:underline transition-all duration-200"
               >
                 Sign Up

@@ -1,3 +1,28 @@
+## Admin setup
+
+Set the following environment variables in your `.env.local` (or deployment env):
+
+```
+SEED_TOKEN=your-long-random-token
+ADMIN_NAME=Administrator
+ADMIN_EMAIL=admin@example.com
+ADMIN_PHONE=9999999999
+ADMIN_PASSWORD=changeMe123!
+ADMIN_STATE=NA
+ADMIN_CITY=NA
+JWT_SECRET=please_change
+```
+
+Seed the admin user (one-time or whenever you need to reset it):
+
+```
+curl -X POST \
+  -H "x-seed-token: your-long-random-token" \
+  http://localhost:3000/api/seed-admin | cat
+```
+
+After seeding, log in at `/login` with `ADMIN_PHONE` and `ADMIN_PASSWORD`. Only users with `role=admin` can access `/admin/**` routes.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started

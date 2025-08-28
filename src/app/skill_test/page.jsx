@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { getLearningData, getLessonContent } from "@/lib/learningData";
 
 export default function TypingTutor() {
   const [selectedLanguage, setSelectedLanguage] = useState("English");
@@ -40,6 +41,48 @@ export default function TypingTutor() {
   ];
 
   const description = `Matter to type is given on upper half part of screen. Word to type is highlighted. Back space is allowed till current word. Wrong typed word makes bold. So user can identify such mistakes. One or more word afterwards the highlighted word can be skipped, if needed. Skipped word will not added as mistakes.`;
+
+  // Load learning data once
+  const [learningData, setLearningData] = useState(null);
+  useEffect(() => {
+    const data = getLearningData();
+    setLearningData(data);
+  }, []);
+
+  // Flatten lessons to map exercises -> lessons without changing UI
+  const lessonsFlat = useMemo(() => {
+    if (!learningData) return [];
+    const all = [];
+    for (const section of learningData.sections) {
+      for (const lesson of section.lessons) {
+        all.push({ ...lesson, sectionId: section.id, sectionName: section.name });
+      }
+    }
+    return all;
+  }, [learningData]);
+
+  // Determine selected lesson by index mapping (stable, no UI change)
+  const selectedIndex = useMemo(() => {
+    const idx = exercises.findIndex((e) => e === selected);
+    return idx >= 0 ? idx : 0;
+  }, [exercises, selected]);
+
+  const selectedLesson = useMemo(() => {
+    if (!lessonsFlat.length) return null;
+    return lessonsFlat[selectedIndex % lessonsFlat.length];
+  }, [lessonsFlat, selectedIndex]);
+
+  // Compute preview content based on language/script
+  const previewContent = useMemo(() => {
+    if (!selectedLesson) return "";
+    const languageKey = selectedLanguage.toLowerCase();
+    const subLangKey = (selectedSubLanguage || "").toLowerCase().includes("ramington")
+      ? "ramington"
+      : (selectedSubLanguage || "").toLowerCase().includes("inscript")
+      ? "inscript"
+      : "";
+    return getLessonContent(selectedLesson, languageKey, subLangKey) || "";
+  }, [selectedLesson, selectedLanguage, selectedSubLanguage]);
 
   const handleAddExercise = () => {
     if (newExercise.trim() !== "" && !exercises.includes(newExercise)) {
@@ -259,13 +302,17 @@ export default function TypingTutor() {
             <h2 className="font-semibold text-[10px] md:text-sm">Exercise</h2>
           </div>
           <div className="border border-gray-300 p-3 text-[10px] md:text-sm leading-6 h-[50vh] overflow-y-scroll bg-[#fefefe] rounded">
-            Brexit was quoted as being the financial equivalent of doomsday for
-            Britain's economy...
+            {previewContent || (
+              <>
+                Brexit was quoted as being the financial equivalent of doomsday for
+                Britain's economy...
+              </>
+            )}
           </div>
           <div className="mt-8 text-[6px] md:text-md text-gray-700">
             <p>
-              Total Characters: <b>5067</b>
-              <span className="pl-10">Total Words: <b>848</b></span>
+              Total Characters: <b>{previewContent ? previewContent.length : 5067}</b>
+              <span className="pl-10">Total Words: <b>{previewContent ? (previewContent.trim().split(/\s+/).length) : 848}</b></span>
             </p>
           </div>
         </div>
@@ -298,7 +345,7 @@ export default function TypingTutor() {
               Exam Description
             </h3>
             <button className="bg-green-500 text-white w-[300px] px-4 py-1 mx-auto cursor-pointer rounded text-sm md:text-lg shadow hover:bg-green-600 transition-colors">
-              <a href="/typing" className="block w-full">Start Test</a>
+              <a href={`/typing-test?lesson=${selectedLesson ? selectedLesson.id : "1.1"}&language=${selectedLanguage.toLowerCase()}&subLanguage=${(selectedSubLanguage || "").toLowerCase()}&duration=${duration}&backspace=${backspace}`} className="block w-full">Start Test</a>
             </button>
           </div>
           <div className="text-green-700 leading-relaxed text-justify mt-1 text-[10px]  md:overflow-auto md:text-sm">

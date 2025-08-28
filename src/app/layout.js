@@ -6,7 +6,6 @@ import Footer from "./components/common/Footer";
 import { Poppins } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { SessionProvider } from "next-auth/react";
 import { usePathname } from "next/navigation";
 
 const poppins = Poppins({
@@ -26,11 +25,9 @@ export default function RootLayout({ children }) {
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased ${poppins.className}`}
       >
-        <SessionProvider>
-          {!hideLayout && <Header />}
-          <main>{children}</main>
-          {!hideLayout && <Footer />}
-        </SessionProvider>
+        {!hideLayout && <Header />}
+        <main>{children}</main>
+        {!hideLayout && <Footer />}
       </body>
     </html>
   );

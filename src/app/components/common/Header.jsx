@@ -1,9 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
+  const router = useRouter();
   const [openDropdown, setOpenDropdown] = useState(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  const checkAuthStatus = React.useCallback(async () => {
+    try {
+      const response = await fetch('/api/profile');
+      if (response.ok) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.error('Auth check error:', error);
+      setIsAuthenticated(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkAuthStatus();
+    const interval = setInterval(checkAuthStatus, 5000); // Check every 5 seconds
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
+  }, [checkAuthStatus]);
+
+  // Listen for storage events (when login/logout happens)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      checkAuthStatus();
+    };
+
+    const handleAuthStateChanged = (event) => {
+      setIsAuthenticated(event.detail.isAuthenticated);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('authStateChanged', handleAuthStateChanged);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authStateChanged', handleAuthStateChanged);
+    };
+  }, [checkAuthStatus]);
 
   const toggleDropdown = (name) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
@@ -14,8 +58,29 @@ export default function Header() {
     setOpenDropdown(null);
   };
 
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        setIsAuthenticated(false);
+        // Dispatch custom event to notify other components about logout
+        window.dispatchEvent(new CustomEvent('authStateChanged', { detail: { isAuthenticated: false } }));
+        router.push('/');
+        router.refresh();
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
-    <header className="border-b shadow-sm relative">
+    <header className="border-b shadow-sm relative z-50">
       {/* Top Section */}
       <div className="bg-white flex items-center justify-between px-4 py-4 relative">
         <div className="z-10 md:block hidden">
@@ -31,12 +96,11 @@ export default function Header() {
           >
             MPCPCT
           </h1>
-<p className="text-[12px] sm:text-sm md:text-2xl lg:text-3xl text-gray-600 font-semibold">
-  <span className="hidden md:inline">(</span>
-  To Help in typing & computer proficiency
-  <span className="hidden md:inline">)</span>
-</p>
-
+          <p className="text-[12px] sm:text-sm md:text-2xl lg:text-3xl text-gray-600 font-semibold">
+            <span className="hidden md:inline">(</span>
+            To Help in typing & computer proficiency
+            <span className="hidden md:inline">)</span>
+          </p>
         </div>
 
         <div className="z-10 text-right text-sm"></div>
@@ -45,100 +109,134 @@ export default function Header() {
       {/* Mobile Nav Toggle */}
       <div className="md:hidden bg-[#290c52] flex justify-between items-center px-4 py-2">
         <span className="text-white font-medium"><a href="/">Home </a></span>
-         <a href="/profile"><div className="items-center pl-50">
-            <img src="/lo.jpg" className="w-8 h-8 rounded-full border" />
-            {/* <p className="pl-2.5 text-[10px]">view</p> */}
-          </div></a>
         <button onClick={toggleMobileNav} className="text-white focus:outline-none">
           {mobileNavOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
         </button>
       </div>
 
       {/* Desktop Navigation */}
-      <nav className="hidden md:block bg-[#290c52] text-white relative z-50">
-        <ul className="flex justify-center flex-wrap px-4 py-2 md:py-4 text-sm md:text-md font-medium gap-4 md:gap-18 relative">
-          <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/">Home</a></li>
-          <li className="relative">
-  <button
-    onClick={() => toggleDropdown("course")}
-    className="hover:bg-blue-700 px-3 py-1 rounded flex items-center gap-1"
-  >
-    Course
-    <span
-      className={`transform transition-transform duration-300 ${
-        openDropdown === "course" ? "rotate-180" : "rotate-0"
-      } text-lg`}
-    >
-      ▾
-    </span>
-  </button>
-
-  {/* Dropdown menu */}
-  <ul
-    className={`absolute left-0 top-full mt-2 bg-white text-black rounded shadow-md min-w-[160px] z-50 transition-all duration-300 origin-top transform ${
-      openDropdown === "course"
-        ? "scale-100 opacity-100"
-        : "scale-95 opacity-0 pointer-events-none"
-    }`}
-  >
-    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
-      <a href="/learning">Learning</a>
-    </li>
-    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
-      <a href="/skill_test">Skill Test</a>
-    </li>
-    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
-      <a href="/exam">Exam Mode</a>
-    </li>
-    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
-      <a href="/">Topic Wise MCQ</a>
-    </li>
-  </ul>
-</li>
-
-         <li className="relative">
-  <button
-    onClick={() => toggleDropdown("download")}
-    className="hover:bg-blue-700 px-3 py-1 rounded flex items-center gap-1"
-  >
-    Download
-    <span
-      className={`transform transition-transform duration-300 ${
-        openDropdown === "download" ? "rotate-180" : "rotate-0"
-      } text-lg`}
-    >
-      ▾
-    </span>
-  </button>
-
-  {/* Dropdown Menu */}
-  <ul
-    className={`absolute left-0 top-full mt-2 bg-white text-black rounded shadow-md min-w-[160px] z-50 transition-all duration-300 origin-top transform ${
-      openDropdown === "download"
-        ? "scale-100 opacity-100"
-        : "scale-95 opacity-0 pointer-events-none"
-    }`}
-  >
-    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
-      <a href="/notes">Video Notes</a>
-    </li>
-    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
-      <a href="/notes">Pdf Notes</a>
-    </li>
-    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
-      <a href="/notes">Syllabus PDF</a>
-    </li>
-  </ul>
-</li>
-
-          <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/about-us">About us</a></li>
-          <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/payment-app">Payment</a></li>
-          <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/contact-us">Contact Us</a></li>
-         <a href="/profile"> <div className="items-center absolute right-40 top-1">
-            <img src="/lo.jpg" className="w-11 h-11 rounded-full border" />
-            <p className="pl-2.5 text-[10px]">view</p>
-          </div></a>
-        </ul>
+      <nav className="hidden md:block bg-[#290c52] text-white">
+        <div className="flex items-center justify-between px-4 py-2 md:py-4 relative">
+          <ul className="flex flex-wrap justify-start space-x-4 md:space-x-18">
+            <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/">Home</a></li>
+            <li className="relative">
+              <button
+                onClick={() => toggleDropdown("course")}
+                className="hover:bg-blue-700 px-3 py-1 rounded flex items-center gap-1"
+              >
+                Course
+                <span
+                  className={`transform transition-transform duration-300 ${
+                    openDropdown === "course" ? "rotate-180" : "rotate-0"
+                  } text-lg`}
+                >
+                  ▾
+                </span>
+              </button>
+              <ul
+                className={`absolute left-0 top-full mt-2 bg-white text-black rounded shadow-md min-w-[160px] z-50 transition-all duration-300 origin-top ${
+                  openDropdown === "course" ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
+              >
+                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+                  <a href="/learning">Learning</a>
+                </li>
+                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+                  <a href="/skill_test">Skill Test</a>
+                </li>
+                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+                  <a href="/exam">Exam Mode</a>
+                </li>
+                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+                  <a href="/">Topic Wise MCQ</a>
+                </li>
+              </ul>
+            </li>
+            <li className="relative">
+              <button
+                onClick={() => toggleDropdown("download")}
+                className="hover:bg-blue-700 px-3 py-1 rounded flex items-center gap-1"
+              >
+                Download
+                <span
+                  className={`transform transition-transform duration-300 ${
+                    openDropdown === "download" ? "rotate-180" : "rotate-0"
+                  } text-lg`}
+                >
+                  ▾
+                </span>
+              </button>
+              <ul
+                className={`absolute left-0 top-full mt-2 bg-white text-black rounded shadow-md min-w-[160px] z-50 transition-all duration-300 origin-top ${
+                  openDropdown === "download" ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
+              >
+                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+                  <a href="/notes">Video Notes</a>
+                </li>
+                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+                  <a href="/notes">Pdf Notes</a>
+                </li>
+                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+                  <a href="/notes">Syllabus PDF</a>
+                </li>
+              </ul>
+            </li>
+            <li className="relative">
+              <button
+                onClick={() => toggleDropdown("ourApp")}
+                className="hover:bg-blue-700 px-3 py-1 rounded flex items-center gap-1"
+              >
+                Our App
+                <span
+                  className={`transform transition-transform duration-300 ${
+                    openDropdown === "ourApp" ? "rotate-180" : "rotate-0"
+                  } text-lg`}
+                >
+                  ▾
+                </span>
+              </button>
+              <ul
+                className={`absolute left-0 top-full mt-2 bg-white text-black rounded shadow-md min-w-[160px] z-50 transition-all duration-300 origin-top ${
+                  openDropdown === "ourApp" ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
+              >
+                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+                  <a href="/android">Android App</a>
+                </li>
+                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+                  <a href="/android">iOS App</a>
+                </li>
+                <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+                  <a href="/android">App Features</a>
+                </li>
+              </ul>
+            </li>
+            <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/about-us">About us</a></li>
+            <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/payment-app">Payment</a></li>
+            <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/contact-us">Contact Us</a></li>
+          </ul>
+          <div className="flex items-center space-x-4 ml-4">
+            {isAuthenticated ? (
+              <>
+                <a href="/profile" className="text-white text-xs hover:text-gray-300 transition-colors">
+                  Profile
+                </a>
+                <button
+                  onClick={handleLogout}
+                  className="text-white text-xs hover:text-gray-300 transition-colors px-3 py-1 rounded border border-white/20 hover:bg-white/10"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <a href="/login" className="text-white text-xs hover:text-gray-300 transition-colors">Login</a>
+                <a href="/signup" className="text-white text-xs hover:text-gray-300 transition-colors">Signup</a>
+              </>
+            )}
+          </div>
+        </div>
       </nav>
 
       {/* Mobile Sidebar Navigation */}
@@ -153,20 +251,13 @@ export default function Header() {
           </button>
         </div>
 
-        <div className="flex flex-col items-center">
-          <img
-            src="/user.jpg"
-            alt="User"
-            className="w-24 h-24 rounded-full border-2 border-white mb-2"
-          />
-          <p className="text-lg font-semibold">User</p>
-        </div>
-
         <ul className="mt-6 space-y-2 px-4">
           <li className="border-b py-2"><a href="/">HOME</a></li>
-
           <li>
-            <button onClick={() => toggleDropdown("mobileCourse")} className="w-full border-b pt-5 text-left py-2 flex justify-between items-center">
+            <button
+              onClick={() => toggleDropdown("mobileCourse")}
+              className="w-full border-b pt-5 text-left py-2 flex justify-between items-center"
+            >
               <span>COURSE</span> <span className="text-3xl">▾</span>
             </button>
             {openDropdown === "mobileCourse" && (
@@ -178,9 +269,11 @@ export default function Header() {
               </ul>
             )}
           </li>
-
           <li>
-            <button onClick={() => toggleDropdown("mobileDownload")} className="w-full border-b pt-5 text-left py-2 flex justify-between items-center">
+            <button
+              onClick={() => toggleDropdown("mobileDownload")}
+              className="w-full border-b pt-5 text-left py-2 flex justify-between items-center"
+            >
               <span>DOWNLOAD</span> <span className="text-3xl">▾</span>
             </button>
             {openDropdown === "mobileDownload" && (
@@ -191,15 +284,45 @@ export default function Header() {
               </ul>
             )}
           </li>
-
+          <li>
+            <button
+              onClick={() => toggleDropdown("mobileOurApp")}
+              className="w-full border-b pt-5 text-left py-2 flex justify-between items-center"
+            >
+              <span>OUR APP</span> <span className="text-3xl">▾</span>
+            </button>
+            {openDropdown === "mobileOurApp" && (
+              <ul className="pl-4 space-y-1 pt-4 text-sm text-gray-300">
+                <li><a href="android">Android App</a></li>
+                <li><a href="android">iOS App</a></li>
+                <li><a href="android">App Features</a></li>
+              </ul>
+            )}
+          </li>
           <li className="border-b pt-5 py-2"><a href="/about-us">ABOUT US</a></li>
           <li className="border-b pt-5 py-2"><a href="/payment-app">PAYMENT</a></li>
           <li className="border-b pt-5 py-2"><a href="/contact-us">CONTACT US</a></li>
         </ul>
 
-        <div className="justify-center mt-10 px-4">
-          <button className="bg-white text-black px-4 py-2 rounded"><a href="/login">Log in</a></button>
-          <button className="bg-blue-500 text-white px-4 py-2 ml-2 rounded"><a href="/signup">Free Registration</a></button>
+        <div className="flex justify-center items-center mt-10 px-4 space-x-2">
+          {isAuthenticated ? (
+            <>
+              <a href="/profile" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                Profile
+              </a>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <a href="/login" className="bg-white text-black px-4 py-2 rounded">Log in</a>
+              <a href="/signup" className="bg-blue-500 text-white px-4 py-2 rounded">Free Registration</a>
+            </>
+          )}
         </div>
       </div>
 

@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import User from "@/lib/models/User";
 import bcrypt from "bcryptjs";
+import { SignJWT } from "jose";
+
+const JWT_SECRET = process.env.JWT_SECRET || "secret123";
 
 export async function POST(req) {
   try {
@@ -27,10 +30,18 @@ export async function POST(req) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    // ✅ Optional: Set session/cookie here if you want
-    // cookies().set("token", "custom_or_jwt_token", { httpOnly: true });
+    // ✅ Generate JWT token using jose
+    const token = await new SignJWT({ 
+      userId: user._id.toString(),
+      phoneNumber: user.phoneNumber,
+      role: user.role || "user"
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('7d')
+      .sign(new TextEncoder().encode(JWT_SECRET));
 
-    return NextResponse.json({
+    // ✅ Create response with user data
+    const response = NextResponse.json({
       message: "Login successful",
       user: {
         id: user._id,
@@ -38,8 +49,20 @@ export async function POST(req) {
         email: user.email,
         phoneNumber: user.phoneNumber,
         profileUrl: user.profileUrl,
+        role: user.role || "user",
       }
     });
+
+    // ✅ Set JWT token as HTTP-only cookie
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: "/"
+    });
+
+    return response;
   } catch (err) {
     console.error("Login error:", err);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
