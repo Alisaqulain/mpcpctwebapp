@@ -14,6 +14,7 @@ export default function EnglishTypingPage() {
   const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [isSoundOn, setIsSoundOn] = useState(true);
   const [currentTime, setCurrentTime] = useState("");
+  const [examData, setExamData] = useState(null);
 
   const inputRef = useRef(null);
   const containerRef = useRef(null);
@@ -27,6 +28,16 @@ export default function EnglishTypingPage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       tickRef.current = new Audio("/tick.wav");
+    }
+
+    // Retrieve exam login data from localStorage
+    const storedData = localStorage.getItem('examLoginData');
+    if (storedData) {
+      try {
+        setExamData(JSON.parse(storedData));
+      } catch (error) {
+        console.error('Error parsing exam data:', error);
+      }
     }
   }, []);
 
@@ -196,7 +207,13 @@ export default function EnglishTypingPage() {
             <div className="w-16 h-16 bg-gray-300 rounded-full mb-2 overflow-hidden">
               <img src="/lo.jpg" alt="avatar" className="w-full h-full object-cover" />
             </div>
-            <div className="text-gray-700 font-semibold">Anas</div>
+            <div className="text-gray-700 font-semibold">{examData?.name || "Anas"}</div>
+            {examData && (
+              <div className="text-xs text-center text-gray-600">
+                <p>{examData.mobile}</p>
+                <p>{examData.city}</p>
+              </div>
+            )}
             <span className="border w-full border-black mt-2"></span>
           </div>
 

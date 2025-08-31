@@ -1,24 +1,51 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { 
-  getLearningData, 
-  getSections, 
-  getLessonsBySection,
-  getLessonById 
-} from "@/lib/learningData";
+import { useRouter } from "next/navigation";
 
 export default function LearningAdmin() {
+  const router = useRouter();
   const [learningData, setLearningData] = useState(null);
   const [selectedSection, setSelectedSection] = useState("home");
   const [editingLesson, setEditingLesson] = useState(null);
   const [showAddLesson, setShowAddLesson] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const data = getLearningData();
-    setLearningData(data);
+    const fetchAll = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await fetch("/api/admin/learning");
+        if (!res.ok) {
+          throw new Error("Failed to load learning data");
+        }
+        const json = await res.json();
+        const sections = json.sections;
+        const lessonsBySection = sections.map(section => ({
+          ...section,
+          lessons: json.lessons
+            .filter(l => l.sectionId === section.id)
+            .map(l => ({
+              id: l.id,
+              title: l.title,
+              description: l.description,
+              difficulty: l.difficulty,
+              estimatedTime: l.estimatedTime,
+            }))
+        }));
+        setLearningData({ sections: lessonsBySection });
+        if (sections.length > 0) setSelectedSection(sections[0].id);
+      } catch (e) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
   }, []);
 
-  if (!learningData) {
+  if (!learningData || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
@@ -33,53 +60,73 @@ export default function LearningAdmin() {
     setEditingLesson(lesson);
   };
 
-  const handleSaveLesson = (updatedLesson) => {
-    // In a real app, you would save this to the database
-    // For now, we'll just update the local state
-    const updatedSections = learningData.sections.map(section => {
-      if (section.id === selectedSection) {
-        return {
-          ...section,
-          lessons: section.lessons.map(lesson => 
-            lesson.id === updatedLesson.id ? updatedLesson : lesson
-          )
-        };
-      }
-      return section;
-    });
-
-    setLearningData({
-      ...learningData,
-      sections: updatedSections
-    });
-    setEditingLesson(null);
+  const handleSaveLesson = async (updatedLesson) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/learning", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "lesson", ...updatedLesson, sectionId: selectedSection })
+      });
+      if (!res.ok) throw new Error("Failed to update lesson");
+      const refreshed = await fetch("/api/admin/learning");
+      const json = await refreshed.json();
+      const sections = json.sections;
+      const lessonsBySection = sections.map(section => ({
+        ...section,
+        lessons: json.lessons
+          .filter(l => l.sectionId === section.id)
+          .map(l => ({
+            id: l.id,
+            title: l.title,
+            description: l.description,
+            difficulty: l.difficulty,
+            estimatedTime: l.estimatedTime,
+          }))
+      }));
+      setLearningData({ sections: lessonsBySection });
+      setEditingLesson(null);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleAddLesson = (newLesson) => {
-    const lessonId = `${currentSection.lessonNumber}.${lessons.length + 1}`;
-    const lesson = {
-      id: lessonId,
-      title: newLesson.title,
-      description: newLesson.description,
-      difficulty: newLesson.difficulty,
-      estimatedTime: newLesson.estimatedTime
-    };
-
-    const updatedSections = learningData.sections.map(section => {
-      if (section.id === selectedSection) {
-        return {
-          ...section,
-          lessons: [...section.lessons, lesson]
-        };
-      }
-      return section;
-    });
-
-    setLearningData({
-      ...learningData,
-      sections: updatedSections
-    });
-    setShowAddLesson(false);
+  const handleAddLesson = async (newLesson) => {
+    setLoading(true);
+    setError("");
+    try {
+      const lessonId = `${currentSection.lessonNumber}.${lessons.length + 1}`;
+      const res = await fetch("/api/admin/learning", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "lesson", sectionId: selectedSection, id: lessonId, ...newLesson })
+      });
+      if (!res.ok) throw new Error("Failed to add lesson");
+      setShowAddLesson(false);
+      const refreshed = await fetch("/api/admin/learning");
+      const json = await refreshed.json();
+      const sections = json.sections;
+      const lessonsBySection = sections.map(section => ({
+        ...section,
+        lessons: json.lessons
+          .filter(l => l.sectionId === section.id)
+          .map(l => ({
+            id: l.id,
+            title: l.title,
+            description: l.description,
+            difficulty: l.difficulty,
+            estimatedTime: l.estimatedTime,
+          }))
+      }));
+      setLearningData({ sections: lessonsBySection });
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -87,8 +134,9 @@ export default function LearningAdmin() {
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-6">Learning Data Admin</h1>
-          
-          {/* Section Selection */}
+          {error && (
+            <div className="mb-4 p-3 rounded bg-red-100 text-red-700">{error}</div>
+          )}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Select Section
@@ -105,8 +153,6 @@ export default function LearningAdmin() {
               ))}
             </select>
           </div>
-
-          {/* Section Info */}
           {currentSection && (
             <div className="bg-purple-50 p-4 rounded-lg mb-6">
               <h2 className="text-xl font-semibold text-purple-800 mb-2">
@@ -118,8 +164,6 @@ export default function LearningAdmin() {
               </p>
             </div>
           )}
-
-          {/* Add Lesson Button */}
           <div className="mb-6">
             <button
               onClick={() => setShowAddLesson(true)}
@@ -128,8 +172,6 @@ export default function LearningAdmin() {
               Add New Lesson
             </button>
           </div>
-
-          {/* Lessons List */}
           <div className="space-y-4">
             {lessons.map((lesson, index) => (
               <div key={lesson.id} className="bg-gray-50 p-4 rounded-lg border">
@@ -161,8 +203,6 @@ export default function LearningAdmin() {
               </div>
             ))}
           </div>
-
-          {/* Edit Lesson Modal */}
           {editingLesson && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
               <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -175,8 +215,6 @@ export default function LearningAdmin() {
               </div>
             </div>
           )}
-
-          {/* Add Lesson Modal */}
           {showAddLesson && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
               <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -194,7 +232,6 @@ export default function LearningAdmin() {
   );
 }
 
-// Lesson Form Component
 function LessonForm({ lesson, onSave, onCancel }) {
   const [formData, setFormData] = useState({
     title: lesson?.title || "",
@@ -222,7 +259,6 @@ function LessonForm({ lesson, onSave, onCancel }) {
           required
         />
       </div>
-
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Description
@@ -235,7 +271,6 @@ function LessonForm({ lesson, onSave, onCancel }) {
           required
         />
       </div>
-
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Difficulty
@@ -250,7 +285,6 @@ function LessonForm({ lesson, onSave, onCancel }) {
           <option value="advanced">Advanced</option>
         </select>
       </div>
-
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Estimated Time
@@ -264,7 +298,6 @@ function LessonForm({ lesson, onSave, onCancel }) {
           required
         />
       </div>
-
       <div className="flex gap-3 pt-4">
         <button
           type="submit"

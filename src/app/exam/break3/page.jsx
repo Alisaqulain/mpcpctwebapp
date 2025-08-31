@@ -3,11 +3,23 @@ import React, { useState, useEffect } from "react";
 
 export default function BreakScreen() {
   const [seconds, setSeconds] = useState(60);
+  const [examData, setExamData] = useState(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setSeconds((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
+
+    // Retrieve exam login data from localStorage
+    const storedData = localStorage.getItem('examLoginData');
+    if (storedData) {
+      try {
+        setExamData(JSON.parse(storedData));
+      } catch (error) {
+        console.error('Error parsing exam data:', error);
+      }
+    }
+
     return () => clearInterval(timer);
   }, []);
 
@@ -23,7 +35,13 @@ export default function BreakScreen() {
           alt="avatar"
           className="w-20 h-20 rounded-full"
         />
-        <p className="text-xl font-semibold">anas</p>
+        <p className="text-xl font-semibold">{examData?.name || "anas"}</p>
+        {examData && (
+          <div className="text-xs text-center text-gray-600">
+            <p>{examData.mobile}</p>
+            <p>{examData.city}</p>
+          </div>
+        )}
         <div className="mt-4 text-center">
         <p className="text-base font-semibold">
           <span className="italic">Test End -</span>{" "}

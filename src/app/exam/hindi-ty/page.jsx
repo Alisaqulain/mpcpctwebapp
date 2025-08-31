@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 
-export default function EnglishTypingPage() {
-  const fullText = `एक गाँव में, रामू नाम का एक लड़का रहता था। रामू बहुत मेहनती था, लेकिन उसके पास ज्यादा पैसे नहीं थे। एक दिन, उसने सुना कि गाँव के पास जंगल में एक जादुई पेड़ है जो सोने के फल देता है। रामू ने सोचा कि अगर उसे वह पेड़ मिल जाए, तो वह अमीर बन जाएगा और अपने परिवार को गरीबी से बचा पाएगा। `;
+export default function HindiTypingPage() {
+  const fullText = `एक लोरेम इप्सम डोलर सिट एमेट कंसेक्टेटुर एडिपिसिसिंग एलिटुरे ऑटुरे कमोडी बीटे लेबोरिओसम वोलुप्टेटेम मोलेस्टिए फुगा एरर वेलिट ऑटेम क्वाम लेबोरे सुंत इप्सा प्रोविडेंट इक्वे डोलोरिबस टेनेटुर एक्सप्लिकाबो एलियास आर्किटेक्टो मिनस मैक्सिमे एडिपिसी इप्सा एट इउरे उत सपिएंटे ओडिट डोलोर डोलोरे एक्सपेडिटा`;
   const words = fullText.split(" ");
 
   const [typedText, setTypedText] = useState("");
@@ -14,20 +14,32 @@ export default function EnglishTypingPage() {
   const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [isSoundOn, setIsSoundOn] = useState(true);
   const [currentTime, setCurrentTime] = useState("");
+  const [examData, setExamData] = useState(null);
 
   const inputRef = useRef(null);
   const containerRef = useRef(null);
   const wordRefs = useRef([]);
   const tickRef = useRef(null);
 
+  const elapsedSeconds = 15 * 60 - timeLeft;
+  const wpm = elapsedSeconds > 0 ? Math.floor((correctWords / elapsedSeconds) * 60) : 0;
+
+  // ✅ Initialize Audio only on the client
   useEffect(() => {
     if (typeof window !== "undefined") {
       tickRef.current = new Audio("/tick.wav");
     }
-  }, []);
 
-  const elapsedSeconds = 15 * 60 - timeLeft;
-  const wpm = elapsedSeconds > 0 ? Math.floor((correctWords / elapsedSeconds) * 60) : 0;
+    // Retrieve exam login data from localStorage
+    const storedData = localStorage.getItem('examLoginData');
+    if (storedData) {
+      try {
+        setExamData(JSON.parse(storedData));
+      } catch (error) {
+        console.error('Error parsing exam data:', error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -198,7 +210,13 @@ export default function EnglishTypingPage() {
             <div className="w-16 h-16 bg-gray-300 rounded-full mb-2 overflow-hidden">
               <img src="/lo.jpg" alt="avatar" className="w-full h-full object-cover" />
             </div>
-            <div className="text-gray-700 font-semibold">Anas</div>
+            <div className="text-gray-700 font-semibold">{examData?.name || "Anas"}</div>
+            {examData && (
+              <div className="text-xs text-center text-gray-600">
+                <p>{examData.mobile}</p>
+                <p>{examData.city}</p>
+              </div>
+            )}
             <span className="border w-full border-black mt-2"></span>
           </div>
 

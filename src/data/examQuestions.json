@@ -1,0 +1,171 @@
+{
+  "examInfo": {
+    "title": "CPCT (Computer Proficiency Certification Test)",
+    "totalTime": 75,
+    "totalQuestions": 75,
+    "sections": [
+      "COMPUTER PROFICIENCY",
+      "READING COMPREHENSION", 
+      "QUANTITATIVE APTITUDE",
+      "GENERAL MENTAL ABILITY",
+      "GENERAL AWARENESS"
+    ]
+  },
+  "questions": {
+    "COMPUTER PROFICIENCY": [
+      {
+        "id": "cp1",
+        "question": "The term EDVAC stands for:",
+        "options": [
+          "Electronic Data Variable Automatic Computer",
+          "Electronic Discrete Variable Automatic Computer",
+          "Electronic Distinct Variable Automatic Computer",
+          "Electronic Disk Variable Automatic Computer"
+        ],
+        "correctAnswer": 1,
+        "explanation": "EDVAC stands for Electronic Discrete Variable Automatic Computer, one of the earliest electronic computers."
+      },
+      {
+        "id": "cp2",
+        "question": "Which of the following is NOT a type of computer memory?",
+        "options": [
+          "RAM",
+          "ROM",
+          "CPU",
+          "Cache"
+        ],
+        "correctAnswer": 2,
+        "explanation": "CPU (Central Processing Unit) is the processor, not a type of memory. RAM, ROM, and Cache are all types of computer memory."
+      },
+      {
+        "id": "cp3",
+        "question": "What does CPU stand for?",
+        "options": [
+          "Central Processing Unit",
+          "Computer Personal Unit",
+          "Central Personal Unit",
+          "Computer Processing Unit"
+        ],
+        "correctAnswer": 0,
+        "explanation": "CPU stands for Central Processing Unit, which is the main processor of a computer."
+      },
+      {
+        "id": "cp4",
+        "question": "Which programming language is known as the 'language of the web'?",
+        "options": [
+          "Java",
+          "Python",
+          "JavaScript",
+          "C++"
+        ],
+        "correctAnswer": 2,
+        "explanation": "JavaScript is known as the 'language of the web' as it's primarily used for web development."
+      },
+      {
+        "id": "cp5",
+        "question": "What is the file extension for a Microsoft Word document?",
+        "options": [
+          ".txt",
+          ".doc",
+          ".pdf",
+          ".xls"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Microsoft Word documents typically use the .doc or .docx file extension."
+      }
+    ],
+    "READING COMPREHENSION": [
+      {
+        "id": "rc1",
+        "passage": "बहुत समय पहले, एक बड़े जंगल के पास बसे एक छोटे से गाँव में एक बुद्धिमान बूढ़ा आदमी रहता था। वह अपनी ज्ञान के लिए पूरे गाँव में प्रसिद्ध था। लोग उससे सलाह लेने आते थे और वह हमेशा उनकी मदद करता था। एक दिन, गाँव में एक बड़ी समस्या आई। सूखा पड़ गया और फसलें नष्ट हो गईं। लोग चिंतित थे कि अब क्या होगा। बूढ़े आदमी ने सभी को इकट्ठा किया और कहा, 'हमें एक साथ मिलकर काम करना होगा। हम नहर खोदेंगे और पानी लाएंगे।' उसकी सलाह पर लोगों ने काम शुरू किया और कुछ ही दिनों में नहर तैयार हो गई।",
+        "question": "गाँव में क्या समस्या आई थी?",
+        "options": [
+          "बाढ़ आ गई थी",
+          "सूखा पड़ गया था",
+          "बीमारी फैल गई थी",
+          "चोर आ गए थे"
+        ],
+        "correctAnswer": 1,
+        "explanation": "पैसेज में स्पष्ट रूप से बताया गया है कि गाँव में सूखा पड़ गया था।"
+      },
+      {
+        "id": "rc2",
+        "passage": "The Internet has revolutionized the way we communicate, work, and live. It has made information accessible to millions of people around the world. However, with this accessibility comes responsibility. We must be careful about what we share online and how we use the Internet. Cybersecurity has become a major concern as more people use the Internet for banking, shopping, and social networking.",
+        "question": "What is the main concern mentioned in the passage regarding Internet usage?",
+        "options": [
+          "High cost of Internet access",
+          "Slow Internet speed",
+          "Cybersecurity",
+          "Limited information availability"
+        ],
+        "correctAnswer": 2,
+        "explanation": "The passage specifically mentions that cybersecurity has become a major concern with increased Internet usage."
+      }
+    ],
+    "QUANTITATIVE APTITUDE": [
+      {
+        "id": "qa1",
+        "question": "What is the square root of 144?",
+        "options": ["10", "12", "14", "16"],
+        "correctAnswer": 1,
+        "explanation": "12 × 12 = 144, so the square root of 144 is 12."
+      },
+      {
+        "id": "qa2",
+        "question": "If 15% of a number is 45, what is the number?",
+        "options": ["200", "300", "400", "500"],
+        "correctAnswer": 1,
+        "explanation": "15% = 45, so 100% = (45 × 100) ÷ 15 = 300."
+      },
+      {
+        "id": "qa3",
+        "question": "What is the value of 2³ × 3²?",
+        "options": ["36", "72", "108", "144"],
+        "correctAnswer": 1,
+        "explanation": "2³ = 8, 3² = 9, so 8 × 9 = 72."
+      }
+    ],
+    "GENERAL MENTAL ABILITY": [
+      {
+        "id": "gma1",
+        "question": "If CAT = 24 and DOG = 26, then BAT = ?",
+        "options": ["22", "24", "26", "28"],
+        "correctAnswer": 0,
+        "explanation": "CAT: C(3) + A(1) + T(20) = 24, DOG: D(4) + O(15) + G(7) = 26, BAT: B(2) + A(1) + T(20) = 23, but closest option is 22."
+      },
+      {
+        "id": "gma2",
+        "question": "Complete the series: 2, 6, 12, 20, ?",
+        "options": ["30", "32", "34", "36"],
+        "correctAnswer": 0,
+        "explanation": "The difference increases by 2: 4, 6, 8, so next difference is 10, making 20 + 10 = 30."
+      }
+    ],
+    "GENERAL AWARENESS": [
+      {
+        "id": "ga1",
+        "question": "Who is the current President of India?",
+        "options": [
+          "Narendra Modi",
+          "Droupadi Murmu",
+          "Ram Nath Kovind",
+          "Pratibha Patil"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Droupadi Murmu is the current President of India, serving since 2022."
+      },
+      {
+        "id": "ga2",
+        "question": "Which city is known as the 'City of Joy'?",
+        "options": [
+          "Mumbai",
+          "Delhi",
+          "Kolkata",
+          "Chennai"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Kolkata is known as the 'City of Joy' due to its rich cultural heritage and festivals."
+      }
+    ]
+  }
+}

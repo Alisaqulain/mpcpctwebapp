@@ -3,30 +3,15 @@ import dbConnect from "@/lib/db";
 import User from "@/lib/models/User";
 import bcrypt from "bcryptjs";
 
-// Protect with a token so only authorized ops can seed
-const SEED_TOKEN = process.env.SEED_TOKEN;
-
 export async function POST(request) {
   try {
-    if (!SEED_TOKEN) {
-      return NextResponse.json({ error: "SEED_TOKEN not set" }, { status: 500 });
-    }
-
-    const headerToken = request.headers.get("x-seed-token");
-    if (!headerToken || headerToken !== SEED_TOKEN) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const adminName = process.env.ADMIN_NAME || "Administrator";
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const adminPhone = process.env.ADMIN_PHONE;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-    const adminState = process.env.ADMIN_STATE || "NA";
-    const adminCity = process.env.ADMIN_CITY || "NA";
-
-    if (!adminEmail || !adminPhone || !adminPassword) {
-      return NextResponse.json({ error: "Missing ADMIN_* env vars" }, { status: 400 });
-    }
+    // Hardcoded admin credentials (requested)
+    const adminName = "Admin";
+    const adminEmail = "admin@mpcpct.com";
+    const adminPhone = "9999999999";
+    const adminPassword = "Admin@12345";
+    const adminState = "NA";
+    const adminCity = "NA";
 
     await dbConnect();
 

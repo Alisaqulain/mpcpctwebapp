@@ -1,8 +1,21 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function ExamInstructions() {
   const [language, setLanguage] = useState("हिन्दी");
+  const [examData, setExamData] = useState(null);
+
+  useEffect(() => {
+    // Retrieve exam login data from localStorage
+    const storedData = localStorage.getItem('examLoginData');
+    if (storedData) {
+      try {
+        setExamData(JSON.parse(storedData));
+      } catch (error) {
+        console.error('Error parsing exam data:', error);
+      }
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-white-100 text-black flex flex-col">
@@ -111,7 +124,11 @@ export default function ExamInstructions() {
           {/* Language Selection */}
           <div className="mt-4 mb-2 border-t border-gray-300 pt-4 ">
             <label className="block mb-1 font-semibold text-sm">Choose Questions Language :-</label>
-            <select className="border border-gray-300 rounded px-2 py-1 text-sm">
+            <select 
+              className="border border-gray-300 rounded px-2 py-1 text-sm"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+            >
               <option>हिन्दी</option>
               <option>English</option>
             </select>
@@ -130,8 +147,11 @@ export default function ExamInstructions() {
 
           {/* Start Test Button */}
           <div className="mt-6 text-center">
-            <button className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded shadow">
-              <a href="/exam_mode"> Start Test</a>
+            <button 
+              onClick={() => window.location.href = '/exam_mode'}
+              className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded shadow cursor-pointer"
+            >
+              Start Test
             </button>
           </div>
         </div>
@@ -143,7 +163,15 @@ export default function ExamInstructions() {
             alt="User"
             className="w-24 h-24 rounded-full border-2 border-gray-400"
           />
-          <p className="mt-2 font-semibold text-blue-800">Anas</p>
+          <p className="mt-2 font-semibold text-blue-800">
+            {examData?.name || "Anas"}
+          </p>
+          {examData && (
+            <div className="text-xs text-center mt-1 text-gray-600">
+              <p>{examData.mobile}</p>
+              <p>{examData.city}</p>
+            </div>
+          )}
           <span className="border w-full border-black mt-2"></span>
         </div>
       </div>

@@ -1,6 +1,21 @@
-import React from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 
-export default function ExamSummary() {
+export default function EnglishResult() {
+  const [examData, setExamData] = useState(null);
+
+  useEffect(() => {
+    // Retrieve exam login data from localStorage
+    const storedData = localStorage.getItem('examLoginData');
+    if (storedData) {
+      try {
+        setExamData(JSON.parse(storedData));
+      } catch (error) {
+        console.error('Error parsing exam data:', error);
+      }
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-white text-sm">
       {/* Header */}
@@ -9,13 +24,19 @@ export default function ExamSummary() {
       </div>
 
       {/* Title */}
-      <div className="text-center font-semibold py-4 text-gray-800 text-base border-b">
+      <div className="text-center font-semibold py-4 text-gray-800 text-base border-b border-gray-300">
         <img
           src="/lo.jpg"
           alt="avatar"
           className="w-20 h-20 rounded-full mx-auto"
         />
-        <p className="mt-2">Anas</p>
+        <p className="mt-2">{examData?.name || "Anas"}</p>
+        {examData && (
+          <div className="text-xs text-gray-600 mt-1">
+            <p>{examData.mobile}</p>
+            <p>{examData.city}</p>
+          </div>
+        )}
       </div>
 
       {/* English Typing Summary */}

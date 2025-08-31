@@ -1,12 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import { FaUser, FaPhone, FaHome, FaArrowLeft } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 export default function StartTestPage() {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [city, setCity] = useState("");
   const [errors, setErrors] = useState({});
+  const router = useRouter();
 
   const handleStart = () => {
     const newErrors = {};
@@ -18,8 +20,17 @@ export default function StartTestPage() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      // All good – handle form submit here
-      alert(`✅ Starting test for ${name}`);
+      // Store exam data in localStorage
+      const examData = {
+        name: name.trim(),
+        mobile: mobile.trim(),
+        city: city.trim(),
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem('examLoginData', JSON.stringify(examData));
+      
+      // Redirect to exam-con page
+      router.push('/exam/exam-con');
     }
   };
 
@@ -116,7 +127,7 @@ export default function StartTestPage() {
               onClick={handleStart}
               className="bg-pink-300 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded shadow"
             >
-             <a href="/exam/exam-con"> Start</a>
+              Start
             </button>
           </div>
         </div>
