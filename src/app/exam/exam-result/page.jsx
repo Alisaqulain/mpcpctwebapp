@@ -6,6 +6,7 @@ export default function ExamSummary() {
   const [examData, setExamData] = useState(null);
   const [examResults, setExamResults] = useState(null);
   const [examInfo, setExamInfo] = useState(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     // Retrieve exam login data from localStorage
@@ -49,8 +50,23 @@ export default function ExamSummary() {
   const { score, stats, timeTaken, submittedAt } = examResults;
   const sections = getExamSections();
 
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloading(true);
+      const html = document.getElementById('exam-summary-root');
+      if (!html) return;
+      const serialized = new XMLSerializer().serializeToString(html);
+      const blob = new Blob([serialized], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      localStorage.setItem('lastResultHtmlUrl', url);
+      window.print();
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white text-sm">
+    <div className="min-h-screen bg-white text-sm" id="exam-summary-root">
       {/* Header */}
       <div className="bg-[#290c52] text-yellow-400 p-2 text-lg font-bold">
         CPCTMASTER 2025 - Exam Results
@@ -237,6 +253,9 @@ export default function ExamSummary() {
           </button>
           <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold">
             <a href="/result/topic">View Detailed Analysis</a>
+          </button>
+          <button onClick={handleDownloadPdf} disabled={downloading} className="bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white px-6 py-2 rounded-lg font-semibold">
+            Download PDF
           </button>
           <button className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold">
             <a href="/">Back to Home</a>

@@ -173,12 +173,12 @@ const App = () => {
             </div>
 
               {isAuthenticated ? (
-                <div className="w-full lg:w-48 border border-[#290c52] bg-gray-50 shadow-md p-4 space-y-4 py-10 md:py-20 relative lg:absolute lg:right-[-15px] lg:top-0 h-auto md:h-[300px] rounded animate-fadeInUp lg:mt-[-147px] flex flex-col items-center justify-center">
+                <div className="w-full lg:w-48 border border-[#290c52] bg-gray-50 shadow-md p-4 space-y-4 py-10 md:py-20 relative lg:absolute lg:right-[-15px] lg:top-0 h-auto md:h-[620px] rounded animate-fadeInUp lg:mt-[-147px] flex flex-col items-center justify-center">
                   <div className="text-center">
                     <div className="text-green-700 text-xl font-semibold">You are logged in</div>
-                    <a href="/profile" className="mt-4 inline-block bg-red-600 text-white py-2 px-4 rounded hover:scale-105 transition-transform">Go to Profile</a>
+                                          <a href="/profile" className="mt-4 block mx-auto bg-red-600 text-white py-2 px-4 rounded hover:scale-105 transition-transform text-center">Go to Profile</a>
                   </div>
-                  <div className="mt-6">
+                  <div className="mt-auto">
                     <img src="/mpc.png" alt="MPCPCT Logo" className="w-16 h-16 md:w-20 md:h-20 mx-auto" />
                     <p className="text-center text-xs md:text-[13px] text-gray-600 mt-1">MPCPCT - Empowering Education</p>
                   </div>
@@ -267,13 +267,13 @@ const App = () => {
                       </button>
                     </div>
 
-                    <div>
+                    <div className="mt-auto">
                       <img
                         src="/mpc.png"
                         alt="MPCPCT Logo"
-                        className="w-16 h-16 md:w-20 md:h-20 mx-auto mt-3 md:mt-5"
+                        className="w-16 h-16 md:w-20 md:h-20 mx-auto"
                       />
-                      <p className="text-center text-xs md:text-[13px] text-gray-600 mt-1 md:mt-2">
+                      <p className="text-center text-xs md:text-[13px] text-gray-600 mt-1">
                         MPCPCT - Empowering Education
                       </p>
                     </div>

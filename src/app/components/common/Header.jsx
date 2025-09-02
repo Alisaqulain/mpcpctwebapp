@@ -219,20 +219,20 @@ export default function Header() {
           <div className="flex items-center space-x-4 ml-4">
             {isAuthenticated ? (
               <>
-                <a href="/profile" className="text-white text-xs hover:text-gray-300 transition-colors">
+                <a href="/profile" className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors text-xs">
                   Profile
                 </a>
                 <button
                   onClick={handleLogout}
-                  className="text-white text-xs hover:text-gray-300 transition-colors px-3 py-1 rounded border border-white/20 hover:bg-white/10"
+                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors text-xs"
                 >
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <a href="/login" className="text-white text-xs hover:text-gray-300 transition-colors">Login</a>
-                <a href="/signup" className="text-white text-xs hover:text-gray-300 transition-colors">Signup</a>
+                <a href="/login" className="bg-white text-black px-3 py-1 rounded hover:bg-gray-100 transition-colors text-xs">Login</a>
+                <a href="/signup" className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors text-xs">Signup</a>
               </>
             )}
           </div>
@@ -319,8 +319,8 @@ export default function Header() {
             </>
           ) : (
             <>
-              <a href="/login" className="bg-white text-black px-4 py-2 rounded">Log in</a>
-              <a href="/signup" className="bg-blue-500 text-white px-4 py-2 rounded">Free Registration</a>
+              <a href="/login" className="bg-white text-black px-4 py-2 rounded hover:bg-gray-100 transition-colors">Login</a>
+              <a href="/signup" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">Signup</a>
             </>
           )}
         </div>

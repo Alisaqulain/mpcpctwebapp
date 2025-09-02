@@ -1,28 +1,56 @@
-import examQuestions from '../data/examQuestions.json';
+import cpctQuestions from '../data/examQuestions.json';
+import rscitQuestions from '../data/examQuestions_rscit.json';
+import cccQuestions from '../data/examQuestions_ccc.json';
+
+const getExamType = () => {
+  try {
+    if (typeof window !== 'undefined') {
+      const fromStorage = localStorage.getItem('examType');
+      if (fromStorage) return fromStorage;
+      const params = new URLSearchParams(window.location.search);
+      const type = params.get('type');
+      if (type) return type.toUpperCase();
+    }
+  } catch {}
+  return 'CPCT';
+};
+
+const datasets = {
+  CPCT: cpctQuestions,
+  RSCIT: rscitQuestions,
+  CCC: cccQuestions,
+};
+
+const pickDataset = () => {
+  const type = getExamType();
+  return datasets[type] || cpctQuestions;
+};
 
 // Get all exam questions
-export const getExamQuestions = () => examQuestions;
+export const getExamQuestions = () => pickDataset();
 
 // Get questions for a specific section
 export const getQuestionsBySection = (sectionName) => {
-  return examQuestions.questions[sectionName] || [];
+  const data = pickDataset();
+  return data.questions[sectionName] || [];
 };
 
 // Get all sections
-export const getExamSections = () => examQuestions.examInfo.sections;
+export const getExamSections = () => pickDataset().examInfo.sections;
 
 // Get exam info
-export const getExamInfo = () => examQuestions.examInfo;
+export const getExamInfo = () => pickDataset().examInfo;
 
 // Get total questions count
-export const getTotalQuestions = () => examQuestions.examInfo.totalQuestions;
+export const getTotalQuestions = () => pickDataset().examInfo.totalQuestions;
 
 // Get total time
-export const getTotalTime = () => examQuestions.examInfo.totalTime;
+export const getTotalTime = () => pickDataset().examInfo.totalTime;
 
 // Get question by ID
 export const getQuestionById = (questionId) => {
-  for (const section of Object.values(examQuestions.questions)) {
+  const data = pickDataset();
+  for (const section of Object.values(data.questions)) {
     const question = section.find(q => q.id === questionId);
     if (question) return question;
   }
@@ -31,7 +59,8 @@ export const getQuestionById = (questionId) => {
 
 // Get section name by question ID
 export const getSectionByQuestionId = (questionId) => {
-  for (const [sectionName, questions] of Object.entries(examQuestions.questions)) {
+  const data = pickDataset();
+  for (const [sectionName, questions] of Object.entries(data.questions)) {
     const question = questions.find(q => q.id === questionId);
     if (question) return sectionName;
   }

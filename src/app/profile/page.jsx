@@ -5,6 +5,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [resultUrl, setResultUrl] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -32,6 +33,10 @@ export default function ProfilePage() {
     };
 
     fetchProfile();
+    try {
+      const url = localStorage.getItem('lastResultHtmlUrl');
+      if (url) setResultUrl(url);
+    } catch {}
   }, []);
 
   if (loading) {
@@ -111,6 +116,12 @@ export default function ProfilePage() {
           <InfoRow label="City" value={user.city} />
           <InfoRow label="State" value={user.states} />
         </div>
+
+        {resultUrl && (
+          <div className="mt-6">
+            <a href={resultUrl} target="_blank" rel="noreferrer" className="inline-block bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">View Last Result PDF</a>
+          </div>
+        )}
       </div>
     </div>
   );
