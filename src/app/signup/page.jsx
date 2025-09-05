@@ -1,516 +1,368 @@
 
 "use client";
 
-import React, { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
-const SignUpPage = () => {
+export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showRePassword, setShowRePassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    phoneNumber: "",
     email: "",
+    phoneNumber: "",
     password: "",
-    rePassword: "",
+    confirmPassword: "",
     states: "",
     city: "",
-    profile: null,
   });
-  const [errors, setErrors] = useState({
-    name: "",
-    phoneNumber: "",
-    email: "",
-    password: "",
-    rePassword: "",
-    states: "",
-    city: "",
-    profile: "",
-    general: "",
-  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/api/profile");
+        if (res.ok) {
+          // User is logged in, redirect to profile
+          router.push("/profile");
+          return;
+        }
+      } catch (err) {
+        // Ignore errors, user is not logged in
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+    checkAuth();
+  }, [router]);
+
+  // Show loading while checking auth
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
 
   // Get the redirect URL from query parameters
   const redirectUrl = searchParams.get("redirect") || "/profile";
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "profile") {
-      setFormData({ ...formData, [name]: files[0] });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-    if (errors[name] || errors.general) {
-      setErrors({ ...errors, [name]: "", general: "" });
-    }
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const validateForm = () => {
-    let valid = true;
-    const newErrors = { ...errors };
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
-      valid = false;
+    if (!formData.name || !formData.email || !formData.phoneNumber || !formData.password || !formData.confirmPassword || !formData.states || !formData.city) {
+      setError("All fields are required.");
+      return false;
     }
 
-    if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber = "Phone number is required";
-      valid = false;
-    } else if (!/^\d{10}$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = "Phone number must be 10 digits";
-      valid = false;
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return false;
     }
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-      valid = false;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-      valid = false;
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return false;
     }
 
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-      valid = false;
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-      valid = false;
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(formData.phoneNumber)) {
+      setError("Please enter a valid 10-digit phone number.");
+      return false;
     }
 
-    if (!formData.rePassword) {
-      newErrors.rePassword = "Please re-enter your password";
-      valid = false;
-    } else if (formData.password !== formData.rePassword) {
-      newErrors.rePassword = "Passwords do not match";
-      valid = false;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address.");
+      return false;
     }
 
-    if (!formData.states) {
-      newErrors.states = "State is required";
-      valid = false;
-    }
-
-    if (!formData.city.trim()) {
-      newErrors.city = "City is required";
-      valid = false;
-    }
-
-    if (!formData.profile) {
-      newErrors.profile = "Profile picture is required";
-      valid = false;
-    }
-
-    setErrors(newErrors);
-    return valid;
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrors({});
+    setError("");
+    setSuccess("");
 
     if (!validateForm()) {
       setIsLoading(false);
       return;
     }
 
-    const data = new FormData();
-    data.append("name", formData.name);
-    data.append("phoneNumber", formData.phoneNumber);
-    data.append("email", formData.email);
-    data.append("password", formData.password);
-    data.append("rePassword", formData.rePassword);
-    data.append("states", formData.states);
-    data.append("city", formData.city);
-    data.append("profile", formData.profile);
-
     try {
-      const response = await fetch("/api/signup", {
-        method: "POST",
-        body: data,
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        setErrors(result.errors || { general: result.error || "Failed to create account" });
-        setIsLoading(false);
-        return;
-      }
-
-      // After successful signup, automatically log in the user
-      const loginResponse = await fetch("/api/login", {
+      const res = await fetch("/api/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          phoneNumber: formData.phoneNumber, 
-          password: formData.password 
-        }),
+        body: JSON.stringify(formData),
       });
 
-      if (!loginResponse.ok) {
-        setErrors({ general: "Account created successfully! Please log in manually." });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Signup failed.");
         setIsLoading(false);
-        return;
+      } else {
+        setSuccess("Account created successfully! Redirecting to login...");
+        setTimeout(() => {
+          router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
+        }, 2000);
       }
-
-      // Clear form data
-      setFormData({
-        name: "",
-        phoneNumber: "",
-        email: "",
-        password: "",
-        rePassword: "",
-        states: "",
-        city: "",
-        profile: null,
-      });
-
-      // Dispatch custom event to notify other components about login
-      window.dispatchEvent(new CustomEvent('authStateChanged', { detail: { isAuthenticated: true } }));
-
-      // Redirect to the intended page
-      router.push(redirectUrl);
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      setErrors({ general: "An error occurred. Please try again." });
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20">
-          <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
-            <h2 className="text-4xl font-extrabold text-[#290c52] tracking-tight text-center">
-              Welcome to MPCPCT
-            </h2>
-            <p className="mt-2 text-center text-lg font-medium text-gray-600">
-              Sign up to connect with us
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-600">
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-semibold text-[#290c52]">
+            Create Account
+          </h2>
+          <p className="mt-2 text-gray-600 text-sm">
+            Join MPCPCT today...
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name Input */}
+          <div className="relative">
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300"
+              placeholder="Full Name"
+              required
+            />
+            <label
+              htmlFor="name"
+              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
+            >
+              Full Name
+            </label>
+          </div>
+
+          {/* Email Input */}
+          <div className="relative">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300"
+              placeholder="Email"
+              required
+            />
+            <label
+              htmlFor="email"
+              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
+            >
+              Email
+            </label>
+          </div>
+
+          {/* Phone Number Input */}
+          <div className="relative">
+            <input
+              type="tel"
+              id="phoneNumber"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleInputChange}
+              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300"
+              placeholder="Phone Number"
+              required
+              pattern="[0-9]{10}"
+            />
+            <label
+              htmlFor="phoneNumber"
+              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
+            >
+              Phone Number
+            </label>
+          </div>
+
+          {/* State Input */}
+          <div className="relative">
+            <input
+              type="text"
+              id="states"
+              name="states"
+              value={formData.states}
+              onChange={handleInputChange}
+              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300"
+              placeholder="State"
+              required
+            />
+            <label
+              htmlFor="states"
+              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
+            >
+              State
+            </label>
+          </div>
+
+          {/* City Input */}
+          <div className="relative">
+            <input
+              type="text"
+              id="city"
+              name="city"
+              value={formData.city}
+              onChange={handleInputChange}
+              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300"
+              placeholder="City"
+              required
+            />
+            <label
+              htmlFor="city"
+              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
+            >
+              City
+            </label>
+          </div>
+
+          {/* Password Input */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300 pr-12"
+              placeholder="Password"
+              required
+            />
+            <label
+              htmlFor="password"
+              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
+            >
+              Password
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-blue-500 transition-all duration-200"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+            </button>
+          </div>
+
+          {/* Confirm Password Input */}
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300 pr-12"
+              placeholder="Confirm Password"
+              required
+            />
+            <label
+              htmlFor="confirmPassword"
+              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
+            >
+              Confirm Password
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-blue-500 transition-all duration-200"
+              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+            >
+              {showConfirmPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+            </button>
+          </div>
+
+          {/* Bottom Links */}
+          <div className="text-center text-sm">
+            <p className="text-gray-600">
+              Already have an account?{" "}
+              <a
+                href={`/login${redirectUrl !== "/profile" ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`}
+                className="text-blue-600 hover:text-blue-400 hover:underline transition-all duration-200"
+              >
+                Login
+              </a>
             </p>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-            <div className="relative">
-              <input
-                id="name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleChange}
-                className={`peer w-full bg-transparent border-2 ${errors.name ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
-                placeholder="Name"
-                required
-                aria-describedby="name-error"
-              />
-              <label
-                htmlFor="name"
-                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
-              >
-                Name
-              </label>
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="name-error">
-                  {errors.name}
-                </p>
-              )}
-            </div>
-
-            <div className="relative">
-              <input
-                id="phoneNumber"
-                name="phoneNumber"
-                type="tel"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                className={`peer w-full bg-transparent border-2 ${errors.phoneNumber ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
-                placeholder="Phone Number"
-                required
-                pattern="\d{10}"
-                aria-describedby="phoneNumber-error"
-              />
-              <label
-                htmlFor="phoneNumber"
-                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
-              >
-                Phone Number
-              </label>
-              {errors.phoneNumber && (
-                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="phoneNumber-error">
-                  {errors.phoneNumber}
-                </p>
-              )}
-            </div>
-
-            <div className="relative">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`peer w-full bg-transparent border-2 ${errors.email ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
-                placeholder="Email"
-                required
-                aria-describedby="email-error"
-              />
-              <label
-                htmlFor="email"
-                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
-              >
-                Email
-              </label>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="email-error">
-                  {errors.email}
-                </p>
-              )}
-            </div>
-
-            <div className="relative">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={handleChange}
-                className={`peer w-full bg-transparent border-2 ${errors.password ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300 pr-12`}
-                placeholder="Password"
-                required
-                aria-describedby="password-error"
-              />
-              <label
-                htmlFor="password"
-                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
-              >
-                Password (8+ characters)
-              </label>
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-indigo-600 transition-colors duration-300"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
-              </button>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="password-error">
-                  {errors.password}
-                </p>
-              )}
-            </div>
-
-            <div className="relative">
-              <input
-                id="rePassword"
-                name="rePassword"
-                type={showRePassword ? "text" : "password"}
-                value={formData.rePassword}
-                onChange={handleChange}
-                className={`peer w-full bg-transparent border-2 ${errors.rePassword ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300 pr-12`}
-                placeholder="Re-enter Password"
-                required
-                aria-describedby="rePassword-error"
-              />
-              <label
-                htmlFor="rePassword"
-                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
-              >
-                Re-enter Password
-              </label>
-              <button
-                type="button"
-                onClick={() => setShowRePassword(!showRePassword)}
-                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-indigo-600 transition-colors duration-300"
-                aria-label={showRePassword ? "Hide password" : "Show password"}
-              >
-                {showRePassword ? <Eye size={20} /> : <EyeOff size={20} />}
-              </button>
-              {errors.rePassword && (
-                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="rePassword-error">
-                  {errors.rePassword}
-                </p>
-              )}
-            </div>
-
-            <div className="relative">
-              <select
-                id="states"
-                name="states"
-                value={formData.states}
-                onChange={handleChange}
-                className={`peer w-full mt-3 bg-transparent border-2 ${errors.states ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 focus:outline-none focus:border-indigo-500 transition-all duration-300 appearance-none`}
-                required
-                aria-describedby="states-error"
-              >
-                <option value="" disabled>Select a state</option>
-                <option value="Andhra Pradesh">Andhra Pradesh</option>
-                <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                <option value="Assam">Assam</option>
-                <option value="Bihar">Bihar</option>
-                <option value="Chhattisgarh">Chhattisgarh</option>
-                <option value="Goa">Goa</option>
-                <option value="Gujarat">Gujarat</option>
-                <option value="Haryana">Haryana</option>
-                <option value="Himachal Pradesh">Himachal Pradesh</option>
-                <option value="Jharkhand">Jharkhand</option>
-                <option value="Karnataka">Karnataka</option>
-                <option value="Kerala">Kerala</option>
-                <option value="Madhya Pradesh">Madhya Pradesh</option>
-                <option value="Maharashtra">Maharashtra</option>
-                <option value="Manipur">Manipur</option>
-                <option value="Meghalaya">Meghalaya</option>
-                <option value="Mizoram">Mizoram</option>
-                <option value="Nagaland">Nagaland</option>
-                <option value="Odisha">Odisha</option>
-                <option value="Punjab">Punjab</option>
-                <option value="Rajasthan">Rajasthan</option>
-                <option value="Sikkim">Sikkim</option>
-                <option value="Tamil Nadu">Tamil Nadu</option>
-                <option value="Telangana">Telangana</option>
-                <option value="Tripura">Tripura</option>
-                <option value="Uttar Pradesh">Uttar Pradesh</option>
-                <option value="Uttarakhand">Uttarakhand</option>
-                <option value="West Bengal">West Bengal</option>
-              </select>
-              <label
-                htmlFor="states"
-                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
-              >
-                State
-              </label>
-              <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-3 px-4 bg-[#290c52] text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-600 disabled:cursor-not-allowed transition-all duration-300"
+            aria-label={isLoading ? "Creating account..." : "Create Account"}
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
                 <svg
-                  className="h-5 w-5 text-gray-400"
+                  className="animate-spin h-5 w-5 text-white"
                   xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
+                  fill="none"
+                  viewBox="0 0 24 24"
                 >
+                  <circle
+                    className="opacity-50"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
                   <path
-                    fillRule="evenodd"
-                    d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 111.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z"
-                    clipRule="evenodd"
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.2A7.963 7.963 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-              </div>
-              {errors.states && (
-                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="states-error">
-                  {errors.states}
-                </p>
-              )}
-            </div>
-
-            <div className="relative">
-              <input
-                id="city"
-                name="city"
-                type="text"
-                value={formData.city}
-                onChange={handleChange}
-                className={`peer w-full bg-transparent border-2 ${errors.city ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
-                placeholder="City"
-                required
-                aria-describedby="city-error"
-              />
-              <label
-                htmlFor="city"
-                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
-              >
-                City
-              </label>
-              {errors.city && (
-                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="city-error">
-                  {errors.city}
-                </p>
-              )}
-            </div>
-
-            <div className="relative">
-              <input
-                id="profile"
-                name="profile"
-                type="file"
-                onChange={handleChange}
-                className={`peer w-full bg-transparent border-2 ${errors.profile ? "border-red-500" : "border-gray-200"} rounded-lg py-3 px-4 text-gray-900 placeholder-transparent focus:outline-none focus:border-indigo-500 transition-all duration-300`}
-                required
-                aria-describedby="profile-error"
-              />
-              <label
-                htmlFor="profile"
-                className="absolute left-4 -top-2.5 bg-transparent px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-indigo-600"
-              >
-                Profile Picture
-              </label>
-              {errors.profile && (
-                <p className="mt-1 text-sm text-red-500 animate-fade-in" id="profile-error">
-                  {errors.profile}
-                </p>
-              )}
-            </div>
-
-            {errors.general && (
-              <p className="mt-1 text-sm text-red-500 animate-fade-in" id="general-error">
-                {errors.general}
-              </p>
+                Creating account...
+              </span>
+            ) : (
+              "Create Account"
             )}
+          </button>
+        </form>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#290c52] text-white rounded-lg py-3 text-sm font-semibold hover:bg-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] focus:ring-4 focus:ring-indigo-200"
-              aria-label={isLoading ? "Creating account" : "Create Account"}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin h-5 w-5 mr-2 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Creating account...
-                </span>
-              ) : (
-                "Create Account"
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center text-sm font-medium">
-            <span className="text-gray-600">Already have an account?</span>{" "}
-            <a
-                              href={`/login${redirectUrl !== "/profile" ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`}
-              className="text-indigo-600 hover:text-indigo-800 hover:underline transition-all duration-300"
-            >
-              Log In
-            </a>
-          </div>
-        </div>
+        {/* Feedback messages */}
+        {error && (
+          <p className="mt-4 text-center text-sm text-red-600 animate-fade">
+            {error}
+          </p>
+        )}
+        {success && (
+          <p className="mt-4 text-center text-sm text-green-600 animate-fade">
+            {success}
+          </p>
+        )}
       </div>
     </div>
   );
-};
-
-export default SignUpPage;
+}

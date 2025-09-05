@@ -213,6 +213,7 @@ export default function Header() {
               </ul>
             </li>
             <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/about-us">About us</a></li>
+            <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/price">Pricing</a></li>
             <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/payment-app">Payment</a></li>
             <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/contact-us">Contact Us</a></li>
           </ul>
@@ -300,6 +301,7 @@ export default function Header() {
             )}
           </li>
           <li className="border-b pt-5 py-2"><a href="/about-us">ABOUT US</a></li>
+          <li className="border-b pt-5 py-2"><a href="/price">PRICING</a></li>
           <li className="border-b pt-5 py-2"><a href="/payment-app">PAYMENT</a></li>
           <li className="border-b pt-5 py-2"><a href="/contact-us">CONTACT US</a></li>
         </ul>

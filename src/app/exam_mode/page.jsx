@@ -1,387 +1,453 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import {
-  getExamInfo,
-  getExamSections,
-  getQuestionsBySection,
-  getNextQuestion,
-  getPreviousQuestion,
-  calculateScore,
-  getSectionStats,
-  getTotalQuestions,
-} from "@/lib/examQuestions";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getExamQuestions, getExamInfo } from "@/lib/examQuestions";
 
-export default function CPCTPage() {
-  const examInfo = getExamInfo();
-  const sections = getExamSections();
-  const [section, setSection] = useState(sections[0] || "COMPUTER PROFICIENCY");
-  const [timeLeft, setTimeLeft] = useState((examInfo?.totalTime || 75) * 60);
-  const [isSoundOn, setIsSoundOn] = useState(true);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showTestDropdown, setShowTestDropdown] = useState(false);
-  const [showSectionDropdown, setShowSectionDropdown] = useState(false);
-  const [selectedTest, setSelectedTest] = useState("CPCT Actual");
+export default function ExamMode() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [isExamStarted, setIsExamStarted] = useState(false);
+  const [isExamCompleted, setIsExamCompleted] = useState(false);
+  const [examState, setExamState] = useState(null);
+  const [examResults, setExamResults] = useState(null);
   const [language, setLanguage] = useState("English");
-  const [answers, setAnswers] = useState({});
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const audioRef = useRef(null);
+  const [examInfo, setExamInfo] = useState(null);
+  const [sections, setSections] = useState([]);
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [freeQuestions, setFreeQuestions] = useState([]);
+  const [paidQuestions, setPaidQuestions] = useState([]);
+  
+  const timerRef = useRef(null);
+  const examType = searchParams.get("type") || "CPCT";
+  const directMode = searchParams.get("direct") === "1";
 
-  // Load tick sound after user interaction
   useEffect(() => {
-    const handleFirstClick = () => {
-      audioRef.current = new Audio("/tick.wav");
-      audioRef.current.volume = 0.2;
-      document.removeEventListener("click", handleFirstClick);
-    };
-    document.addEventListener("click", handleFirstClick);
-    return () => document.removeEventListener("click", handleFirstClick);
-  }, []);
+    loadExamData();
+    loadExamState();
+  }, [examType]);
 
-  // Timer
-  useEffect(() => {
-    const interval = setInterval(() => {
+  const loadExamData = async () => {
+    try {
+      const data = await getExamQuestions(examType);
+      setExamInfo(data.examInfo);
+      setSections(data.sections);
+      setQuestions(data.questions);
+      
+      // Separate free and paid questions
+      const free = data.questions.filter(q => q.isFree);
+      const paid = data.questions.filter(q => !q.isFree);
+      setFreeQuestions(free);
+      setPaidQuestions(paid);
+      
+      setTimeLeft(data.examInfo.totalTime * 60);
+      setLoading(false);
+    } catch (error) {
+      console.error("Failed to load exam data:", error);
+      setLoading(false);
+    }
+  };
+
+  const loadExamState = () => {
+    const savedState = localStorage.getItem(`examState_${examType}`);
+    if (savedState) {
+      const state = JSON.parse(savedState);
+      setExamState(state);
+      setCurrentQuestionIndex(state.currentQuestionIndex || 0);
+      setSelectedAnswers(state.selectedAnswers || {});
+      setIsExamStarted(true);
+    }
+  };
+
+  const checkAccess = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setAccessDenied(true);
+        return false;
+      }
+
+      const response = await fetch("/api/check-access", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          type: "exam",
+          examType,
+        }),
+      });
+
+      const data = await response.json();
+      return data.hasAccess;
+    } catch (error) {
+      console.error("Access check failed:", error);
+      return false;
+    }
+  };
+
+  const startExam = async () => {
+    if (directMode) {
+      // Direct result mode - show zero score and redirect
+      const results = {
+        totalQuestions: questions.length,
+        correctAnswers: 0,
+        score: 0,
+        percentage: 0,
+        timeTaken: 0,
+        examType,
+        timestamp: new Date().toISOString(),
+      };
+      setExamResults(results);
+      localStorage.setItem(`examResults_${examType}`, JSON.stringify(results));
+      router.push(`/exam/exam-result?type=${examType}`);
+      return;
+    }
+
+    // Check access for paid content
+    const hasAccess = await checkAccess();
+    if (!hasAccess && questions.length > freeQuestions.length) {
+      // User needs to pay for access
+      router.push(`/price?redirect=${encodeURIComponent(`/exam_mode?type=${examType}`)}`);
+      return;
+    }
+
+    setIsExamStarted(true);
+    startTimer();
+    saveExamState();
+  };
+
+  const startTimer = () => {
+    timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 0) {
-          clearInterval(interval);
-          try { handleSubmitExam(); } catch {}
+        if (prev <= 1) {
+          submitExam();
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  };
 
-  // Play sound each second
-  useEffect(() => {
-    if (isSoundOn && audioRef.current && timeLeft > 0) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch((err) => {
-        console.log("Sound error:", err);
-      });
+  const saveExamState = () => {
+    const state = {
+      currentQuestionIndex,
+      selectedAnswers,
+      timeLeft,
+      examType,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(`examState_${examType}`, JSON.stringify(state));
+    setExamState(state);
+  };
+
+  const handleAnswerSelect = (questionId, answerIndex) => {
+    setSelectedAnswers((prev) => ({
+      ...prev,
+      [questionId]: answerIndex,
+    }));
+    saveExamState();
+  };
+
+  const submitExam = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
     }
-  }, [timeLeft, isSoundOn]);
 
-  const formatTime = (s) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+    const totalQuestions = questions.length;
+    const correctAnswers = questions.reduce((count, question, index) => {
+      const selectedAnswer = selectedAnswers[question.id];
+      return selectedAnswer === question.correctAnswer ? count + 1 : count;
+    }, 0);
+
+    const score = correctAnswers;
+    const percentage = Math.round((score / totalQuestions) * 100);
+    const timeTaken = examInfo.totalTime * 60 - timeLeft;
+
+    const results = {
+      totalQuestions,
+      correctAnswers: score,
+      score,
+      percentage,
+      timeTaken,
+      examType,
+      timestamp: new Date().toISOString(),
+    };
+
+    setExamResults(results);
+    localStorage.setItem(`examResults_${examType}`, JSON.stringify(results));
+    localStorage.removeItem(`examState_${examType}`);
+    setIsExamCompleted(true);
+    router.push(`/exam/exam-result?type=${examType}`);
   };
 
-  const testTypes = ["CPCT Actual", "English Typing", "हिंदी टाइपिंग"];
-  const sectionQuestions = getQuestionsBySection(section);
-  const currentQuestion = sectionQuestions[currentIndex] || null;
-
-  const persistState = (partial) => {
-    try {
-      const state = {
-        section,
-        currentIndex,
-        answers,
-        timeLeft,
-        ...partial,
-      };
-      localStorage.setItem("examState", JSON.stringify(state));
-    } catch {}
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  useEffect(() => {
-    try {
-      const storedLang = localStorage.getItem("examLanguage");
-      if (storedLang) setLanguage(storedLang === "हिन्दी" ? "Hindi" : "English");
-      // Support direct result and exam type via URL
-      const params = new URLSearchParams(window.location.search);
-      const type = params.get('type');
-      if (type) {
-        try { localStorage.setItem('examType', type.toUpperCase()); } catch {}
-      }
-      const existing = localStorage.getItem("examState");
-      if (existing) {
-        const parsed = JSON.parse(existing);
-        if (parsed.section) setSection(parsed.section);
-        if (parsed.currentIndex !== undefined) setCurrentIndex(parsed.currentIndex);
-        if (parsed.answers) setAnswers(parsed.answers);
-        if (parsed.timeLeft !== undefined) setTimeLeft(parsed.timeLeft);
-      }
-
-      // If direct=1, auto-submit zero-score result for the selected exam
-      const direct = params.get('direct');
-      const directFlag = localStorage.getItem('directExamResult');
-      if (direct === '1' || directFlag === '1') {
-        const score = calculateScore({});
-        const stats = getSectionStats({});
-        const totalQs = getTotalQuestions();
-        const payload = {
-          score: { ...score, total: totalQs },
-          stats,
-          timeTaken: 0,
-          submittedAt: new Date().toISOString(),
-        };
-        localStorage.setItem("examResults", JSON.stringify(payload));
-        localStorage.removeItem("examState");
-        window.location.href = "/exam/exam-result";
-        return;
-      }
-    } catch {}
-  }, []);
-
-  const handleSelectAnswer = (optionIndex) => {
-    if (!currentQuestion) return;
-    const next = { ...answers, [currentQuestion.id]: optionIndex };
-    setAnswers(next);
-    persistState({ answers: next });
+  const goToQuestion = (index) => {
+    setCurrentQuestionIndex(index);
   };
 
-  const goNext = () => {
-    if (!currentQuestion) return;
-    const nextQ = getNextQuestion(section, currentQuestion.id);
-    if (!nextQ) { handleSubmitExam(); return; }
-    const nextSection = getExamSections().find((s) => getQuestionsBySection(s).some((q) => q.id === nextQ.id)) || section;
-    const indexInSection = getQuestionsBySection(nextSection).findIndex((q) => q.id === nextQ.id);
-    setSection(nextSection);
-    setCurrentIndex(Math.max(0, indexInSection));
-    persistState({ section: nextSection, currentIndex: Math.max(0, indexInSection) });
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
 
-  const goPrev = () => {
-    if (!currentQuestion) return;
-    const prevQ = getPreviousQuestion(section, currentQuestion.id);
-    if (!prevQ) return;
-    const prevSection = getExamSections().find((s) => getQuestionsBySection(s).some((q) => q.id === prevQ.id)) || section;
-    const indexInSection = getQuestionsBySection(prevSection).findIndex((q) => q.id === prevQ.id);
-    setSection(prevSection);
-    setCurrentIndex(Math.max(0, indexInSection));
-    persistState({ section: prevSection, currentIndex: Math.max(0, indexInSection) });
-  };
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-4">Please log in to access this exam.</p>
+          <button
+            onClick={() => router.push("/login")}
+            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
+          >
+            Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  const clearResponse = () => {
-    if (!currentQuestion) return;
-    const next = { ...answers, [currentQuestion.id]: null };
-    setAnswers(next);
-    persistState({ answers: next });
-  };
+  if (!isExamStarted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-white to-blue-100 py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                {examInfo.title} Exam
+              </h1>
+              <p className="text-xl text-gray-600">
+                {examInfo.description}
+              </p>
+            </div>
 
-  const handleSubmitExam = () => {
-    try {
-      const score = calculateScore(answers);
-      const stats = getSectionStats(answers);
-      const timeTaken = (examInfo?.totalTime || 75) * 60 - timeLeft;
-      const payload = { score, stats, timeTaken, submittedAt: new Date().toISOString() };
-      localStorage.setItem("examResults", JSON.stringify(payload));
-      localStorage.removeItem("examState");
-      window.location.href = "/exam/exam-result";
-    } catch (e) { console.error("Failed to submit exam", e); }
-  };
+            <div className="grid md:grid-cols-2 gap-8 mb-8">
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Exam Details</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span>Total Questions:</span>
+                    <span className="font-medium">{examInfo.totalQuestions}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Time Limit:</span>
+                    <span className="font-medium">{examInfo.totalTime} minutes</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Passing Score:</span>
+                    <span className="font-medium">{examInfo.passingScore || 50}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Content Access</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span>Free Questions:</span>
+                    <span className="font-medium text-green-600">{freeQuestions.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Paid Questions:</span>
+                    <span className="font-medium text-red-600">{paidQuestions.length}</span>
+                  </div>
+                  {paidQuestions.length > 0 && (
+                    <div className="text-sm text-gray-600 bg-yellow-50 p-3 rounded">
+                      <strong>Note:</strong> Some questions require a subscription. 
+                      <a href="/price" className="text-purple-600 hover:underline ml-1">View plans</a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <button
+                onClick={startExam}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-lg text-xl font-semibold shadow-lg transition-all hover:scale-105"
+              >
+                {directMode ? "Show Results" : "Start Exam"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentQuestion = questions[currentQuestionIndex];
+  const questionText = language === "हिन्दी" && currentQuestion.question_hi ? currentQuestion.question_hi : currentQuestion.question_en;
+  const options = language === "हिन्दी" && currentQuestion.options_hi ? currentQuestion.options_hi : currentQuestion.options_en;
+  const passage = language === "हिन्दी" && currentQuestion.passage_hi ? currentQuestion.passage_hi : currentQuestion.passage_en;
 
   return (
-    <div className="h-screen flex flex-col lg:flex-row bg-white relative">
-      {/* Mobile Menu Button */}
-      <button
-        className="lg:hidden fixed top-1 left-2 z-50 bg-[#290c52] text-white p-2 rounded"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        {isMobileMenuOpen ? "✕" : "☰"}
-      </button>
-
-      {/* Sidebar - Mobile */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-white w-64 overflow-y-auto">
-          <div className="p-4 text-sm h-full">
-            <div className="flex flex-col items-center py-6">
-              <img src="/lo.jpg" className="w-24 h-24 rounded-full border-2" />
-              <p className="mt-2 font-semibold text-blue-800">Anas</p>
-              <hr className="border w-full mt-2" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">
+                {examInfo.title} Exam
+              </h1>
+              <p className="text-sm text-gray-600">
+                Question {currentQuestionIndex + 1} of {questions.length}
+              </p>
             </div>
             
-            {/* Question Palette */}
-            <h2 className="font-bold mb-2 text-center bg-[#290c52] text-white py-2 rounded">
-              Question Palette
-            </h2>
-            
-            <div className="grid grid-cols-4 gap-2 mb-4">
-              {Array.from({ length: 16 }, (_, i) => (
-                <div
-                  key={i}
-                  className={`w-8 h-8 flex items-center justify-center text-black text-sm font-semibold border border-black ${
-                    i === 0 ? "bg-red-600" : "bg-gray-300"
-                  }`}
-                >
-                  {i + 1}
-                </div>
-              ))}
-            </div>
-            
-            <button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded mt-4">
-              Submit Exam
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Header */}
-        <div className="fixed top-0 left-0 right-0 w-full bg-[#290c52] text-white flex justify-between items-center px-4 py-2 text-sm z-30">
-          <div className="font-semibold">CPCT Exam - {section}</div>
-          <div className="flex gap-2 items-center">
-            <div className="flex items-center gap-2 pr-4">
-              <img src="/lo.jpg" className="w-8 h-8 rounded-full border" />
-              <span className="text-xs text-yellow-300 hidden sm:inline">Anas</span>
-            </div>
-            <span className="text-lg">Time Left: <b className={`px-3 rounded ${
-              timeLeft <= 300 ? 'bg-red-600 animate-pulse' : 
-              timeLeft <= 600 ? 'bg-orange-500' : 'bg-red-500'
-            } text-white`}>{formatTime(timeLeft)}</b></span>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="hidden lg:block bg-gray-200 h-2 mt-10">
-          <div 
-            className="bg-green-500 h-2 transition-all duration-300"
-            style={{ width: "25%" }}
-          ></div>
-        </div>
-
-        {/* Section Navigation */}
-        <div className="hidden lg:flex border-b px-4 py-0 border-y-gray-200 bg-white text-xs overflow-x-auto">
-          {sections.map((sec) => (
-            <button
-              key={sec}
-              onClick={() => { setSection(sec); setCurrentIndex(0); persistState({ section: sec, currentIndex: 0 }); }}
-              className={`${
-                section === sec
-                  ? "bg-[#290c52] text-white border-gray-300"
-                  : "bg-white text-blue-700 border-r border-gray-300 px-4"
-              } px-2 py-3 whitespace-nowrap`}
-            >
-              {sec}
-            </button>
-          ))}
-          <div className="ml-auto flex items-center gap-2 whitespace-nowrap">
-            <button onClick={() => setIsSoundOn(!isSoundOn)} title={isSoundOn ? "Mute" : "Unmute"}>
-              {isSoundOn ? "🔊" : "🔇"}
-            </button>
-          </div>
-        </div>
-
-        {/* Question Panel */}
-        <div className="flex-grow p-4 overflow-auto bg-white-50 mt-0 md:mt-0 relative">
-          {/* Question Header */}
-          <div className="bg-[#290c52] text-white text-sm px-4 py-3 rounded-t flex justify-between flex-wrap gap-2">
-            <span>Question {currentIndex + 1} of {sectionQuestions.length} - {section}</span>
-            <div className="flex items-center gap-2">
-              <p>View in:</p>
-              <select className="text-black text-xs bg-white rounded px-2 py-1" value={language} onChange={(e) => { setLanguage(e.target.value); localStorage.setItem("examLanguage", e.target.value === "Hindi" ? "हिन्दी" : "English"); }}>
+            <div className="flex items-center space-x-4">
+              {/* Language Toggle */}
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+              >
                 <option value="English">English</option>
-                <option value="Hindi">Hindi</option>
+                <option value="हिन्दी">हिन्दी</option>
               </select>
-            </div>
-          </div>
 
-          {/* Question Content */}
-          <div className="border border-gray-300 rounded-b bg-white">
-            <div className="bg-gray-50 px-4 py-3 border-b text-sm font-semibold flex flex-col sm:flex-row justify-between">
-              <span>Question ID: {currentQuestion?.id || '-'}</span>
-              <span className="mt-1 sm:mt-0">Marks: 1 | Negative Marks: 0</span>
-            </div>
-
-            {section === "READING COMPREHENSION" && currentQuestion?.passage ? (
-              <div className="flex flex-col lg:flex-row p-4 gap-x-6 gap-y-10">
-                <div className="lg:w-2/3 text-sm border-r pr-4 max-h-72 overflow-y-auto">
-                  <h3 className="font-bold mb-2">Passage:</h3>
-                  <p className="text-gray-700">{currentQuestion.passage}</p>
-                </div>
-                <div className="lg:w-1/3">
-                  <p className="mb-4 font-medium">{language === 'Hindi' ? (currentQuestion.question_hi || currentQuestion.question) : currentQuestion.question}</p>
-                  {(language === 'Hindi' ? (currentQuestion.options_hi || currentQuestion.options) : currentQuestion.options).map((opt, i) => (
-                    <label key={i} className="flex items-start gap-x-2 gap-y-6">
-                      <input type="radio" name="q1" className="mt-1" checked={answers[currentQuestion.id] === i} onChange={() => handleSelectAnswer(i)} />
-                      <span>{opt}</span>
-                    </label>
-                  ))}
+              {/* Timer */}
+              <div className="text-right">
+                <div className="text-sm text-gray-600">Time Remaining</div>
+                <div className={`text-lg font-mono font-semibold ${timeLeft < 300 ? "text-red-600" : "text-gray-900"}`}>
+                  {formatTime(timeLeft)}
                 </div>
               </div>
-            ) : (
-              <div className="p-4 text-md md:text-xl mb-28">
-                <p className="mb-4">{language === 'Hindi' ? (currentQuestion?.question_hi || currentQuestion?.question) : currentQuestion?.question}</p>
-                {(language === 'Hindi' ? (currentQuestion?.options_hi || currentQuestion?.options) : currentQuestion?.options)?.map((opt, i) => (
-                  <label key={i} className="flex items-start gap-2">
-                    <input type="radio" name="q1" className="mt-1" checked={answers[currentQuestion.id] === i} onChange={() => handleSelectAnswer(i)} />
-                    <span>{opt}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
 
-          {/* Footer */}
-          <div className="flex justify-between items-center bg-white-50 px-4 py-3 border-t flex-wrap gap-2">
-            <div className="space-x-2">
-              <button className="px-4 py-2 absolute md:relative mb-[-30] ml-38 md:ml-0 md:mb-0 bg-blue-600 text-white rounded text-sm whitespace-nowrap" onClick={goNext}>Mark for Review & Next</button>
-              <button className="px-4 py-2  bg-red-500 text-white rounded text-sm whitespace-nowrap" onClick={clearResponse}>Clear Response</button>
+              {/* Submit Button */}
+              <button
+                onClick={submitExam}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                Submit Exam
+              </button>
             </div>
-            <div className="space-x-20 md:space-x-2">
-              <button className="bg-blue-400 hover:bg-blue-700 text-white px-6 py-2 text-sm rounded whitespace-nowrap" onClick={goPrev}>Previous</button>
-              <button className="bg-green-600 hover:bg-cyan-700 text-white px-6 py-2 text-sm rounded whitespace-nowrap" onClick={goNext}>Save & Next</button>
-            </div>
-            <button className="bg-green-800 hover:bg-cyan-700 text-white px-12 py-2 ml-2 text-[13px] rounded w-full md:hidden" onClick={handleSubmitExam}>Submit Exam</button>
           </div>
         </div>
       </div>
 
-      {/* Sidebar - Desktop */}
-      <div className="hidden lg:block w-full lg:w-60 bg-blue-50 border-l shadow-lg max-h-[100vh] overflow-y-auto sticky top-0 mt-3">
-        <div className="p-4 text-sm h-full">
-          <div className="flex flex-col items-center py-6">
-            <img src="/lo.jpg" className="w-24 h-24 rounded-full border-2" />
-            <p className="mt-2 font-semibold text-blue-800">Anas</p>
-            <hr className="border w-full mt-2" />
-          </div>
-          <div className="text-xs grid grid-cols-2 gap-2 mb-4">
-            <div className="flex items-center">
-              <span className="inline-block w-8 h-8 bg-green-400 mr-2 rounded-sm text-center items-center justify-center pt-1 text-white text-[20px]">0</span>
-              <p>Answered</p>
-            </div>
-            <div className="flex items-center">
-              <span className="inline-block w-15 h-8 bg-red-600 mr-2 rounded-sm text-center items-center justify-center pt-1 text-white text-[20px]">1</span>
-              <p>Not Answered</p>
-            </div>
-            <div className="flex items-center">
-              <span className="inline-block w-8 h-8 bg-gray-400 mr-2 rounded-sm text-center items-center justify-center pt-1 text-white text-[20px]">51</span>
-              <p>Not Visited</p>
-            </div>
-            <div className="flex items-center">
-              <span className="inline-block w-14 h-8 bg-purple-600 mr-2 rounded-sm text-center items-center justify-center pt-1 text-white text-[20px]">0</span>
-              <p>Marked for Review</p>
-            </div>
-            <div className="flex items-center col-span-2">
-              <span className="inline-block w-8 h-8 bg-indigo-600 mr-2 rounded-sm text-center items-center justify-center pt-1 text-white text-[20px]">0</span>
-              <p>Answered & Marked for Review</p>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Question Area */}
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              {/* Passage */}
+              {passage && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-medium text-gray-900 mb-2">Passage:</h3>
+                  <p className="text-gray-700">{passage}</p>
+                </div>
+              )}
+
+              {/* Question */}
+              <div className="mb-6">
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                  {questionText}
+                </h2>
+
+                {/* Options */}
+                <div className="space-y-3">
+                  {options.map((option, index) => (
+                    <label
+                      key={index}
+                      className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${
+                        selectedAnswers[currentQuestion.id] === index
+                          ? "border-purple-500 bg-purple-50"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name={`question_${currentQuestion.id}`}
+                        value={index}
+                        checked={selectedAnswers[currentQuestion.id] === index}
+                        onChange={() => handleAnswerSelect(currentQuestion.id, index)}
+                        className="mr-3 text-purple-600"
+                      />
+                      <span className="text-gray-700">{option}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Navigation */}
+              <div className="flex justify-between items-center pt-6 border-t">
+                <button
+                  onClick={() => goToQuestion(Math.max(0, currentQuestionIndex - 1))}
+                  disabled={currentQuestionIndex === 0}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                
+                <span className="text-sm text-gray-600">
+                  {currentQuestionIndex + 1} of {questions.length}
+                </span>
+                
+                <button
+                  onClick={() => goToQuestion(Math.min(questions.length - 1, currentQuestionIndex + 1))}
+                  disabled={currentQuestionIndex === questions.length - 1}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
 
-          <h2 className="font-bold mb-2 text-white-50 text-center bg-[#290c52] text-[12px] text-white py-2">General IT Skills & Networking</h2>
-          <h2 className="font-bold mb-2 text-white-50">Choose a Question</h2>
-          <div className="grid grid-cols-4 gap-2 mb-4">
-            {sectionQuestions.map((q, i) => {
-              const answered = answers[q.id] !== undefined && answers[q.id] !== null;
-              const isCurrent = currentQuestion?.id === q.id;
-              return (
-                <button
-                  key={q.id}
-                  onClick={() => { setCurrentIndex(i); persistState({ currentIndex: i }); }}
-                  className={`w-8 h-8 flex items-center justify-center text-white text-sm font-semibold border ${
-                    isCurrent ? "bg-red-600 border-black" : answered ? "bg-green-500 border-green-700" : "bg-gray-400 border-gray-600"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              );
-            })}
+          {/* Question Palette */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm border p-4">
+              <h3 className="font-medium text-gray-900 mb-4">Question Palette</h3>
+              <div className="grid grid-cols-5 gap-2">
+                {questions.map((question, index) => (
+                  <button
+                    key={question.id}
+                    onClick={() => goToQuestion(index)}
+                    className={`w-10 h-10 rounded-md text-sm font-medium transition-all ${
+                      index === currentQuestionIndex
+                        ? "bg-purple-600 text-white"
+                        : selectedAnswers[question.id] !== undefined
+                        ? "bg-green-100 text-green-800 border border-green-300"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+              </div>
+              
+              <div className="mt-4 space-y-2 text-xs">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-purple-600 rounded mr-2"></div>
+                  <span>Current</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-green-100 border border-green-300 rounded mr-2"></div>
+                  <span>Answered</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-gray-100 rounded mr-2"></div>
+                  <span>Unanswered</span>
+                </div>
+              </div>
+            </div>
           </div>
-        
-          <button className="bg-green-800 hover:bg-cyan-700 text-white px-12 py-2 ml-2 mt-[-4] text-[13px] rounded" onClick={handleSubmitExam}>Submit Exam</button>
         </div>
       </div>
     </div>

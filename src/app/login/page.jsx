@@ -13,6 +13,35 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/api/profile");
+        if (res.ok) {
+          // User is logged in, redirect to profile
+          router.push("/profile");
+          return;
+        }
+      } catch (err) {
+        // Ignore errors, user is not logged in
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+    checkAuth();
+  }, [router]);
+
+  // Show loading while checking auth
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
 
   // Get the redirect URL from query parameters
   const redirectUrl = searchParams.get("redirect") || "/profile";
@@ -199,7 +228,7 @@ export default function LoginPage() {
           <p className="mt-4 text-center text-sm text-green-600 animate-fade">
             {success}
           </p>
-        )}
+          )}
       </div>
     </div>
   );
