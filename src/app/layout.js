@@ -29,7 +29,32 @@ export default function RootLayout({ children }) {
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#290c52" />
-        <meta name="description" content="Practice CPCT, RSCIT, and CCC exams with bilingual support, results, and admin controls." />
+        <meta name="description" content="Practice CPCT, RSCIT, and CCC exams with bilingual support, real-time results, and comprehensive learning materials. Free trial available!" />
+        <meta name="keywords" content="CPCT exam, RSCIT exam, CCC exam, computer proficiency, Hindi English, online exam, practice test, government exam" />
+        <meta name="author" content="MPCPCT Web App" />
+        <meta name="robots" content="index, follow" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"} />
+        <meta property="og:title" content="MPCPCT - CPCT, RSCIT, CCC Exam Practice Platform" />
+        <meta property="og:description" content="Practice CPCT, RSCIT, and CCC exams with bilingual support, real-time results, and comprehensive learning materials." />
+        <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"}/og-image.jpg`} />
+        <meta property="og:site_name" content="MPCPCT Web App" />
+        <meta property="og:locale" content="en_IN" />
+        
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"} />
+        <meta property="twitter:title" content="MPCPCT - CPCT, RSCIT, CCC Exam Practice Platform" />
+        <meta property="twitter:description" content="Practice CPCT, RSCIT, and CCC exams with bilingual support, real-time results, and comprehensive learning materials." />
+        <meta property="twitter:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"}/og-image.jpg`} />
+        
+        {/* Additional SEO */}
+        <link rel="canonical" href={process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"} />
+        <link rel="alternate" hrefLang="en" href={`${process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"}/en`} />
+        <link rel="alternate" hrefLang="hi" href={`${process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"}/hi`} />
+        
         {gaId ? (
           <>
             <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
@@ -38,7 +63,10 @@ export default function RootLayout({ children }) {
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);} 
                 gtag('js', new Date());
-                gtag('config', '${gaId}');
+                gtag('config', '${gaId}', {
+                  page_title: document.title,
+                  page_location: window.location.href,
+                });
               `}
             </Script>
           </>

@@ -1,61 +1,203 @@
-## Admin setup
+# 🎯 MPCPCT Web App
 
-Set the following environment variables in your `.env.local` (or deployment env):
+A comprehensive exam practice platform for CPCT, RSCIT, and CCC exams with bilingual support (Hindi/English), subscription-based content access, and admin panel for content management.
+
+## ✨ Features
+
+### 🎓 Exam System
+- **Multi-Exam Support**: CPCT, RSCIT, CCC exams
+- **Bilingual Interface**: Hindi and English language support
+- **Real-time Results**: Instant scoring and performance analytics
+- **PDF Downloads**: Download exam results as PDF
+- **Topic-wise Practice**: Section-based question practice
+- **Timer Functionality**: Real-time exam timing
+
+### 💳 Subscription System
+- **Free Trial**: One free lesson/exam per category
+- **Flexible Plans**: Basic, Premium, and Lifetime subscriptions
+- **Payment Integration**: Razorpay payment gateway
+- **Email Notifications**: Subscription confirmations
+- **Access Control**: Content gating based on subscription status
+
+### 👨‍💼 Admin Panel
+- **Content Management**: Add/edit exams, sections, and questions
+- **Learning Management**: Manage learning sections and lessons
+- **Subscription Monitoring**: View active subscriptions
+- **User Management**: Admin access control
+- **Analytics**: Track subscription metrics
+
+### 🔧 Technical Features
+- **Modern Stack**: Next.js 15, React 19, MongoDB
+- **Responsive Design**: Mobile-first approach
+- **SEO Optimized**: Meta tags, sitemap, robots.txt
+- **Performance**: Optimized builds and caching
+- **Security**: JWT authentication, bcrypt password hashing
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- MongoDB Atlas or local MongoDB
+- Razorpay account (for payments)
+- Email service (Gmail SMTP recommended)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd mpcpctwebapp
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp env.example .env.local
+   # Edit .env.local with your configuration
+   ```
+
+4. **Run development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Seed admin user**
+   ```bash
+   # Visit: http://localhost:3000/api/seed-admin
+   # Admin credentials: 7869654042 / Admin@1234
+   ```
+
+## 📁 Project Structure
 
 ```
-SEED_TOKEN=your-long-random-token
-ADMIN_NAME=Administrator
-ADMIN_EMAIL=admin@example.com
-ADMIN_PHONE=9999999999
-ADMIN_PASSWORD=changeMe123!
-ADMIN_STATE=NA
-ADMIN_CITY=NA
-JWT_SECRET=please_change
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   │   ├── admin/         # Admin panel APIs
+│   │   ├── payments/      # Payment processing
+│   │   ├── subscriptions/ # Subscription management
+│   │   └── webhooks/      # Payment webhooks
+│   ├── components/        # Reusable components
+│   ├── exam/              # Exam-related pages
+│   ├── exam_mode/         # Main exam interface
+│   ├── admin/             # Admin panel
+│   ├── price/             # Pricing page
+│   └── payment/           # Payment processing
+├── data/                  # JSON data files
+│   ├── examQuestions.json
+│   ├── examQuestions_rscit.json
+│   └── examQuestions_ccc.json
+├── lib/                   # Utility libraries
+│   ├── models/            # MongoDB models
+│   ├── auth.js            # Authentication utilities
+│   ├── access.js          # Access control
+│   └── email.js           # Email utilities
+└── styles/                # CSS files
 ```
 
-Seed the admin user (one-time or whenever you need to reset it):
+## 🔧 Configuration
 
-```
-curl -X POST \
-  -H "x-seed-token: your-long-random-token" \
-  http://localhost:3000/api/seed-admin | cat
-```
+### Environment Variables
 
-After seeding, log in at `/login` with `ADMIN_PHONE` and `ADMIN_PASSWORD`. Only users with `role=admin` can access `/admin/**` routes.
+See `env.example` for all required environment variables:
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+- **Database**: MongoDB connection string
+- **Authentication**: JWT secret
+- **Site**: Public URL and Google Analytics ID
+- **Email**: SMTP configuration
+- **Payments**: Razorpay API keys
+- **Admin**: Default admin credentials
 
-## Getting Started
+### Database Models
 
-First, run the development server:
+- **User**: User accounts and authentication
+- **Exam**: Exam configurations
+- **Section**: Exam sections/chapters
+- **Question**: Individual questions with bilingual support
+- **Lesson**: Learning content
+- **Subscription**: User subscriptions
+- **Payment**: Payment records
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🎯 Usage
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### For Students
+1. **Register/Login**: Create account or login
+2. **Browse Content**: Explore free and paid content
+3. **Take Exams**: Practice with real exam questions
+4. **View Results**: Get detailed performance analytics
+5. **Subscribe**: Access premium content
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### For Admins
+1. **Login**: Use admin credentials (7869654042 / Admin@1234)
+2. **Manage Content**: Add/edit exams, questions, lessons
+3. **Monitor Subscriptions**: View active subscriptions
+4. **Analytics**: Track user engagement and revenue
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Deployment
 
-## Learn More
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
-To learn more about Next.js, take a look at the following resources:
+### Quick Deploy to Vercel
+1. Push code to GitHub
+2. Connect to Vercel
+3. Add environment variables
+4. Deploy automatically
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📊 SEO Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- ✅ Dynamic sitemap generation
+- ✅ Robots.txt configuration
+- ✅ Meta tags and Open Graph
+- ✅ Google Analytics integration
+- ✅ Structured data markup
+- ✅ Mobile-responsive design
 
-## Deploy on Vercel
+## 🔒 Security
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- JWT-based authentication
+- Bcrypt password hashing
+- Environment variable protection
+- CORS configuration
+- Input validation
+- SQL injection prevention
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📱 Mobile Support
+
+- Responsive design
+- Touch-friendly interface
+- Mobile-optimized exam interface
+- Progressive Web App features
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Check the [DEPLOYMENT.md](./DEPLOYMENT.md) guide
+- Review the troubleshooting section
+- Contact the development team
+
+## 🎉 Acknowledgments
+
+- Next.js team for the amazing framework
+- MongoDB for database support
+- Razorpay for payment processing
+- All contributors and testers
+
+---
+
+**Ready to deploy?** Check out the [DEPLOYMENT.md](./DEPLOYMENT.md) guide for production setup!
