@@ -27,7 +27,12 @@ const pickDataset = () => {
 };
 
 // Get all exam questions
-export const getExamQuestions = () => pickDataset();
+export const getExamQuestions = (examType = null) => {
+  if (examType) {
+    return datasets[examType.toUpperCase()] || cpctQuestions;
+  }
+  return pickDataset();
+};
 
 // Get questions for a specific section
 export const getQuestionsBySection = (sectionName) => {

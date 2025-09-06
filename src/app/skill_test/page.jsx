@@ -345,7 +345,7 @@ export default function TypingTutor() {
               Exam Description
             </h3>
             <button className="bg-green-500 text-white w-[300px] px-4 py-1 mx-auto cursor-pointer rounded text-sm md:text-lg shadow hover:bg-green-600 transition-colors">
-              <a href={`/typing-test?lesson=${selectedLesson ? selectedLesson.id : "1.1"}&language=${selectedLanguage.toLowerCase()}&subLanguage=${(selectedSubLanguage || "").toLowerCase()}&duration=${duration}&backspace=${backspace}`} className="block w-full">Start Test</a>
+              <a href={"/typing"}>Start Test</a>
             </button>
           </div>
           <div className="text-green-700 leading-relaxed text-justify mt-1 text-[10px]  md:overflow-auto md:text-sm">

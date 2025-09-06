@@ -48,7 +48,7 @@ export default function ExamSection() {
 
             {/* Start Exam Button */}
              <button className="relative bg-pink-300 hover:bg-yellow-500 text-black px-4  md:px-6 py-3 text-sm font-semibold rounded-md shadow-md">
-             <a href="/exam_mode?type=CPCT"> Start Exam</a>
+             <a href="/exam/exam-login"> Start Exam</a>
              <img src="/new1.png" alt="" className="w-12 h-14 top-[-16] right-[-12] absolute" />
             </button>
           </div>
@@ -67,7 +67,7 @@ export default function ExamSection() {
 
             {/* Start Exam Button */}
             <button className="relative bg-pink-300 hover:bg-yellow-500 text-black px-4  md:px-6  py-3 text-sm font-semibold rounded-md shadow-md">
-             <a href="/exam_mode?type=CCC"> Start Exam</a>
+             <a href="/result/ccc"> Start Exam</a>
              <img src="/new1.png" alt="" className="w-12 h-14 top-[-16] right-[-12] absolute" />
             </button>
           </div>
@@ -86,7 +86,7 @@ export default function ExamSection() {
 
             {/* Start Exam Button */}
            <button className="relative bg-pink-300 hover:bg-yellow-500 text-black  px-4  md:px-6  py-3 text-sm font-semibold rounded-md shadow-md">
-             <a href="/exam_mode?type=RSCIT"> Start Exam</a>
+             <a href="/result/rscit"> Start Exam</a>
              <img src="/new1.png" alt="" className="w-12 h-14 top-[-16] right-[-12] absolute" />
             </button>
           </div>
@@ -105,7 +105,7 @@ export default function ExamSection() {
 
             {/* Start Exam Button */}
             <button className="relative bg-pink-300 hover:bg-yellow-500 text-black  px-4  md:px-6  py-3 text-sm font-semibold rounded-md shadow-md">
-             <a href="/exam_mode?type=CPCT"> Start Exam</a>
+             <a href="/result/topic"> Start Exam</a>
              <img src="/new1.png" alt="" className="w-12 h-14 top-[-16] right-[-12] absolute" />
             </button>
           </div>

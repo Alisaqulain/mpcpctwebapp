@@ -213,7 +213,6 @@ export default function Header() {
               </ul>
             </li>
             <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/about-us">About us</a></li>
-            <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/price">Pricing</a></li>
             <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/payment-app">Payment</a></li>
             <li className="hover:bg-blue-700 px-3 py-1 rounded"><a href="/contact-us">Contact Us</a></li>
           </ul>
@@ -251,7 +250,14 @@ export default function Header() {
             <FaTimes size={24} />
           </button>
         </div>
-
+<div className="flex flex-col items-center">
+          <img
+            src="/user.jpg"
+            alt="User"
+            className="w-24 h-24 rounded-full border-2 border-white mb-2"
+          />
+          <p className="text-lg font-semibold">User</p>
+        </div>
         <ul className="mt-6 space-y-2 px-4">
           <li className="border-b py-2"><a href="/">HOME</a></li>
           <li>
@@ -301,7 +307,6 @@ export default function Header() {
             )}
           </li>
           <li className="border-b pt-5 py-2"><a href="/about-us">ABOUT US</a></li>
-          <li className="border-b pt-5 py-2"><a href="/price">PRICING</a></li>
           <li className="border-b pt-5 py-2"><a href="/payment-app">PAYMENT</a></li>
           <li className="border-b pt-5 py-2"><a href="/contact-us">CONTACT US</a></li>
         </ul>
