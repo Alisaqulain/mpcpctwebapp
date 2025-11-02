@@ -15,6 +15,8 @@ export default function App() {
   const [backspaceCount, setBackspaceCount] = useState(0);
   const [fontSize, setFontSize] = useState(16);
   const [isMobile, setIsMobile] = useState(false);
+  const [leftHandImage, setLeftHandImage] = useState("/images/left-resting-hand.webp");
+  const [rightHandImage, setRightHandImage] = useState("/images/right-resting-hand.webp");
   const inputRef = useRef(null);
 
   const highlightedKeys = ["A", "S", "D", "F", "Space", "J", "K", "L", ";", "Space"];
@@ -27,15 +29,137 @@ export default function App() {
   const wpm = elapsedTime > 0 ? Math.round((correctCount / elapsedTime) * 60) : 0;
 
   const fingerMap = {
+    // Left hand keys
+    "`": "pinky",
+    "1": "pinky",
+    "2": "pinky",
+    "3": "pinky",
+    "4": "pinky",
+    "5": "pinky",
+    "Q": "pinky",
+    "W": "ring",
+    "E": "middle",
+    "R": "index-left",
+    "T": "index-left",
     "A": "pinky",
     "S": "ring",
     "D": "middle",
     "F": "index-left",
-    "Space": "thumb",
+    "G": "index-left",
+    "Z": "pinky",
+    "X": "ring",
+    "C": "middle",
+    "V": "index-left",
+    "B": "index-left",
+    "Shift": "pinky",
+    "Tab": "pinky",
+    "Caps": "pinky",
+    "Ctrl": "pinky",
+    "Alt": "thumb",
+    "Win": "thumb",
+    "Menu": "pinky",
+    
+    // Right hand keys
+    "Y": "index-right",
+    "U": "index-right",
+    "I": "middle-right",
+    "O": "ring-right",
+    "P": "pinky-right",
+    "H": "index-right",
     "J": "index-right",
     "K": "middle-right",
     "L": "ring-right",
-    ";": "pinky-right"
+    ";": "pinky-right",
+    "'": "pinky-right",
+    "N": "index-right",
+    "M": "index-right",
+    ",": "middle-right",
+    ".": "ring-right",
+    "/": "pinky-right",
+    "6": "index-right",
+    "7": "index-right",
+    "8": "middle-right",
+    "9": "ring-right",
+    "0": "pinky-right",
+    "-": "pinky-right",
+    "=": "pinky-right",
+    "[": "pinky-right",
+    "]": "pinky-right",
+    "\\": "pinky-right",
+    "Enter": "pinky-right",
+    "Backspace": "pinky-right",
+    "Menu": "pinky-right",
+    
+    // Space key uses both thumbs
+    "Space": "thumb"
+  };
+
+  // Mapping between keys and their corresponding hand images
+  const keyToHandImage = {
+    // Left hand keys
+    "`": { left: "/images/left-key-~.webp", right: "/images/right-resting-hand.webp" },
+    "1": { left: "/images/left-key-1.webp", right: "/images/right-resting-hand.webp" },
+    "2": { left: "/images/left-key-2.webp", right: "/images/right-resting-hand.webp" },
+    "3": { left: "/images/left-key-3.webp", right: "/images/right-resting-hand.webp" },
+    "4": { left: "/images/left-key-4.webp", right: "/images/right-resting-hand.webp" },
+    "5": { left: "/images/left-key-5.webp", right: "/images/right-resting-hand.webp" },
+    "Q": { left: "/images/left-key-q.webp", right: "/images/right-resting-hand.webp" },
+    "W": { left: "/images/left-key-w.webp", right: "/images/right-resting-hand.webp" },
+    "E": { left: "/images/left-key-e.webp", right: "/images/right-resting-hand.webp" },
+    "R": { left: "/images/left-key-r.webp", right: "/images/right-resting-hand.webp" },
+    "T": { left: "/images/left-key-t.webp", right: "/images/right-resting-hand.webp" },
+    "A": { left: "/images/left-key-a.webp", right: "/images/right-resting-hand.webp" },
+    "S": { left: "/images/left-key-s.webp", right: "/images/right-resting-hand.webp" },
+    "D": { left: "/images/left-key-d.webp", right: "/images/right-resting-hand.webp" },
+    "F": { left: "/images/left-key-f.webp", right: "/images/right-resting-hand.webp" },
+    "G": { left: "/images/left-key-g.webp", right: "/images/right-resting-hand.webp" },
+    "Z": { left: "/images/left-key-z.webp", right: "/images/right-resting-hand.webp" },
+    "X": { left: "/images/left-key-x.webp", right: "/images/right-resting-hand.webp" },
+    "C": { left: "/images/left-key-c.webp", right: "/images/right-resting-hand.webp" },
+    "V": { left: "/images/left-key-v.webp", right: "/images/right-resting-hand.webp" },
+    "B": { left: "/images/left-key-b.webp", right: "/images/right-resting-hand.webp" },
+    "Shift": { left: "/images/left-key-shift.webp", right: "/images/right-resting-hand.webp" },
+    "Tab": { left: "/images/left-key-tab.webp", right: "/images/right-resting-hand.webp" },
+    "Caps": { left: "/images/left-key-caps.webp", right: "/images/right-resting-hand.webp" },
+    "Ctrl": { left: "/images/left-key-ctrl.webp", right: "/images/right-resting-hand.webp" },
+    "Alt": { left: "/images/left-key-alt.webp", right: "/images/right-resting-hand.webp" },
+    "Win": { left: "/images/left-key-win.webp", right: "/images/right-resting-hand.webp" },
+    
+    // Right hand keys
+    "Y": { left: "/images/left-resting-hand.webp", right: "/images/right-key-y.webp" },
+    "U": { left: "/images/left-resting-hand.webp", right: "/images/right-key-u.webp" },
+    "I": { left: "/images/left-resting-hand.webp", right: "/images/right-key-i.webp" },
+    "O": { left: "/images/left-resting-hand.webp", right: "/images/right-key-o.webp" },
+    "P": { left: "/images/left-resting-hand.webp", right: "/images/right-key-p.webp" },
+    "H": { left: "/images/left-resting-hand.webp", right: "/images/right-key-h.webp" },
+    "J": { left: "/images/left-resting-hand.webp", right: "/images/right-key-j.webp" },
+    "K": { left: "/images/left-resting-hand.webp", right: "/images/right-key-k.webp" },
+    "L": { left: "/images/left-resting-hand.webp", right: "/images/right-key-l.webp" },
+    "N": { left: "/images/left-resting-hand.webp", right: "/images/right-key-n.webp" },
+    "M": { left: "/images/left-resting-hand.webp", right: "/images/right-key-m.webp" },
+    ";": { left: "/images/left-resting-hand.webp", right: "/images/right-key-;.webp" },
+    "'": { left: "/images/left-resting-hand.webp", right: "/images/right-key-'.webp" },
+    ",": { left: "/images/left-resting-hand.webp", right: "/images/right-key-,.webp" },
+    ".": { left: "/images/left-resting-hand.webp", right: "/images/right-key-..webp" },
+    "/": { left: "/images/left-resting-hand.webp", right: "/images/right-key-questionMark.webp" },
+    "6": { left: "/images/left-resting-hand.webp", right: "/images/right-key-6.webp" },
+    "7": { left: "/images/left-resting-hand.webp", right: "/images/right-key-7.webp" },
+    "8": { left: "/images/left-resting-hand.webp", right: "/images/right-key-8.webp" },
+    "9": { left: "/images/left-resting-hand.webp", right: "/images/right-key-9.webp" },
+    "0": { left: "/images/left-resting-hand.webp", right: "/images/right-key-0.webp" },
+    "-": { left: "/images/left-resting-hand.webp", right: "/images/right-key-dash.webp" },
+    "=": { left: "/images/left-resting-hand.webp", right: "/images/right-key-plus.webp" },
+    "[": { left: "/images/left-resting-hand.webp", right: "/images/right-key-{.webp" },
+    "]": { left: "/images/left-resting-hand.webp", right: "/images/right-key-}.webp" },
+    "\\": { left: "/images/left-resting-hand.webp", right: "/images/right-key-questionMark.webp" },
+    "Backspace": { left: "/images/left-resting-hand.webp", right: "/images/right-key-backspace.webp" },
+    "Enter": { left: "/images/left-resting-hand.webp", right: "/images/right-key-enter.webp" },
+    "Menu": { left: "/images/left-resting-hand.webp", right: "/images/right-key-menu.webp" },
+    " ": { left: "/images/left-key-space.webp", right: "/images/right-key- .webp" }, // Space key
+    "Space": { left: "/images/left-key-space.webp", right: "/images/right-key- .webp" }, // Space key
+    
+    // Default hand positions
+    "resting": { left: "/images/left-resting-hand.webp", right: "/images/right-resting-hand.webp" }
   };
 
   const keys = [
@@ -107,6 +231,58 @@ export default function App() {
     return key;
   };
 
+  // Function to update hand images based on the pressed key
+  const updateHandImages = useCallback((key) => {
+    // Get the finger mapping for this key
+    const finger = fingerMap[key];
+    
+    if (!finger) {
+      // If no finger mapping, use resting position
+      setLeftHandImage(keyToHandImage["resting"].left);
+      setRightHandImage(keyToHandImage["resting"].right);
+      return;
+    }
+
+    // Determine which hand the finger belongs to
+    const isLeftHand = ['pinky', 'ring', 'middle', 'index-left'].includes(finger);
+    const isRightHand = ['index-right', 'middle-right', 'ring-right', 'pinky-right'].includes(finger);
+    const isThumb = finger === 'thumb';
+
+    try {
+      if (isThumb) {
+        // For thumb (space key), show both hands with thumb position
+        if (key === "Space" || key === " ") {
+          // Special handling for space key - use existing images for both thumbs
+          setLeftHandImage("/images/left-key-ctrl.webp");
+          setRightHandImage("/images/right-key- .webp");
+        } else {
+          const handImages = keyToHandImage[key] || keyToHandImage["resting"];
+          setLeftHandImage(handImages.left);
+          setRightHandImage(handImages.right);
+        }
+      } else if (isLeftHand) {
+        // Show specific finger position for left hand, keep right hand resting
+        const handImages = keyToHandImage[key] || keyToHandImage["resting"];
+        setLeftHandImage(handImages.left);
+        setRightHandImage(keyToHandImage["resting"].right);
+      } else if (isRightHand) {
+        // Show specific finger position for right hand, keep left hand resting
+        const handImages = keyToHandImage[key] || keyToHandImage["resting"];
+        setLeftHandImage(keyToHandImage["resting"].left);
+        setRightHandImage(handImages.right);
+      } else {
+        // Fallback to resting position
+        setLeftHandImage(keyToHandImage["resting"].left);
+        setRightHandImage(keyToHandImage["resting"].right);
+      }
+    } catch (error) {
+      console.error("Error updating hand images:", error);
+      // Fallback to resting position on error
+      setLeftHandImage(keyToHandImage["resting"].left);
+      setRightHandImage(keyToHandImage["resting"].right);
+    }
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setTimer(prev => {
@@ -122,48 +298,59 @@ export default function App() {
   }, []);
 
   const handleKeyPress = useCallback((e) => {
-    if (currentIndex >= highlightedKeys.length) return;
     const normalizedKey = normalizeKey(e.key);
-
-    if (e.key === "Backspace") {
-      setBackspaceCount(prev => prev + 1);
-    }
-
-    if (e.key === ' ' || highlightedKeys.includes(normalizedKey)) {
-      e.preventDefault();
-    }
-
+    
+    // Update hand images for any key press
+    updateHandImages(normalizedKey);
     setPressedKey(normalizedKey);
-    const expectedKey = highlightedKeys[currentIndex];
-    const isCorrect = normalizedKey === expectedKey;
-    const newKeyStatus = [...keyStatus];
-    newKeyStatus[currentIndex] = isCorrect ? 'correct' : 'wrong';
-    setKeyStatus(newKeyStatus);
-    if (isCorrect) {
-      setCurrentIndex(prev => prev + 1);
-    }
-    const totalAttempts = currentIndex + (isCorrect ? 1 : 0) + wrongCount;
-    const newAccuracy = Math.round(((currentIndex + (isCorrect ? 1 : 0)) / totalAttempts) * 100);
-    setAccuracy(newAccuracy);
 
-    if (sound) {
-      const audio = new Audio(isCorrect ? '/correct.mp3' : '/wrong.mp3');
-      audio.play().catch(e => console.log("Audio play failed:", e));
+    // Only process typing practice if we're still in the exercise
+    if (currentIndex < highlightedKeys.length) {
+      if (e.key === "Backspace") {
+        setBackspaceCount(prev => prev + 1);
+      }
+
+      if (e.key === ' ' || highlightedKeys.includes(normalizedKey)) {
+        e.preventDefault();
+      }
+      
+      const expectedKey = highlightedKeys[currentIndex];
+      const isCorrect = normalizedKey === expectedKey;
+      const newKeyStatus = [...keyStatus];
+      newKeyStatus[currentIndex] = isCorrect ? 'correct' : 'wrong';
+      setKeyStatus(newKeyStatus);
+      if (isCorrect) {
+        setCurrentIndex(prev => prev + 1);
+      }
+      const totalAttempts = currentIndex + (isCorrect ? 1 : 0) + wrongCount;
+      const newAccuracy = Math.round(((currentIndex + (isCorrect ? 1 : 0)) / totalAttempts) * 100);
+      setAccuracy(newAccuracy);
+
+      if (sound) {
+        const audio = new Audio(isCorrect ? '/correct.mp3' : '/wrong.mp3');
+        audio.play().catch(e => console.log("Audio play failed:", e));
+      }
     }
-  }, [currentIndex, keyStatus, wrongCount, sound]);
+  }, [currentIndex, keyStatus, wrongCount, sound, updateHandImages]);
 
   const handleKeyUp = useCallback(() => {
     setPressedKey("");
+    // Reset both hand images to resting position when key is released
+    setLeftHandImage(keyToHandImage["resting"].left);
+    setRightHandImage(keyToHandImage["resting"].right);
   }, []);
 
   useEffect(() => {
+    // Add single set of key listeners
     window.addEventListener('keydown', handleKeyPress);
     window.addEventListener('keyup', handleKeyUp);
+    
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, [handleKeyPress, handleKeyUp]);
+
 
   const resetStats = () => {
     setCurrentIndex(0);
@@ -173,6 +360,8 @@ export default function App() {
     setElapsedTime(0);
     setBackspaceCount(0);
     setPressedKey("");
+    setLeftHandImage(keyToHandImage["resting"].left);
+    setRightHandImage(keyToHandImage["resting"].right);
     if (isMobile && inputRef.current) {
       inputRef.current.focus();
     }
@@ -230,6 +419,9 @@ export default function App() {
             height: 30px !important;
           }
           .hand-image {
+            display: none !important;
+          }
+          .hand-overlay {
             display: none !important;
           }
         }
@@ -328,6 +520,38 @@ export default function App() {
           <div className={`relative mt-4 p-4 border border-gray-600 rounded-3xl shadow-md ${
             isDarkMode ? "bg-black" : "bg-gray-200"
           } mobile-scale`}>
+            
+            {/* Dual Hand Image Overlay - positioned on top of keyboard */}
+            {hand && (leftHandImage || rightHandImage) && (
+              <div className="absolute inset-0 pointer-events-none z-10 hand-overlay">
+                {/* Left Hand - positioned to align with A,S,D,F keys */}
+                <div className="absolute left-[-70px] top-70 transform -translate-y-1/2 -translate-x-12">
+                  <img 
+                    src={leftHandImage} 
+                    alt="Left hand finger position" 
+                    className="w-130 h-600 object-contain opacity-85 transition-all duration-200 ease-in-out transform scale-110"
+                  />
+                </div>
+                
+                {/* Right Hand - positioned to align with J,K,L,; keys */}
+                <div className="absolute right-13 top-70 transform -translate-y-1/2 translate-x-12">
+                  <img 
+                    src={rightHandImage} 
+                    alt="Right hand finger position" 
+                    className="w-130 h-600 object-contain opacity-85 transition-all duration-200 ease-in-out transform scale-110"
+                  />
+                </div>
+                
+                {/* Pressed Key Indicator */}
+                {pressedKey && (
+                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
+                    <div className="bg-yellow-400 text-black px-3 py-1 rounded-full text-lg font-bold shadow-lg animate-pulse">
+                      {pressedKey}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             {keys.map((row, rowIndex) => (
               <div key={rowIndex} className="flex mb-2">
                 {row.map((key, keyIndex) => {
@@ -351,7 +575,8 @@ export default function App() {
                         ${
                           isPressed ? "bg-white text-black" :
                           isCurrentKey ? "bg-yellow-400" :
-                          isDarkMode ? "bg-gray-800" : "bg-white"
+                          hand ? (isDarkMode ? "bg-gray-800/70" : "bg-white/70") :
+                          (isDarkMode ? "bg-gray-800" : "bg-white")
                         }`}
                     >
                       {key === "Space" ? "Space" : key}
@@ -360,22 +585,6 @@ export default function App() {
                 })}
               </div>
             ))}
-            {hand && (
-              <div className="absolute bottom-0 top-35 right-50 w-120 h-auto pointer-events-none hand-image">
-                <img src="/hand.png" alt="Hand" className="w-full h-auto opacity-80" />
-                {currentIndex < highlightedKeys.length && (
-                  <div
-                    className={`absolute w-8 h-8 rounded-full ${
-                      keyStatus[currentIndex] === "wrong"
-                        ? "bg-red-500"
-                        : keyStatus[currentIndex] === "correct"
-                        ? "bg-green-500"
-                        : "bg-yellow-400"
-                    } ${getFingerPosition(fingerMap[highlightedKeys[currentIndex]] || "thumb")}`}
-                  ></div>
-                )}
-              </div>
-            )}
           </div>
         )}
       </div>

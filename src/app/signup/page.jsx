@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -17,12 +16,14 @@ export default function SignupPage() {
     states: "",
     city: "",
   });
+  const [profileFile, setProfileFile] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // Check if user is already logged in
   useEffect(() => {
@@ -30,12 +31,11 @@ export default function SignupPage() {
       try {
         const res = await fetch("/api/profile");
         if (res.ok) {
-          // User is logged in, redirect to profile
           router.push("/profile");
           return;
         }
       } catch (err) {
-        // Ignore errors, user is not logged in
+        // ignore
       } finally {
         setIsCheckingAuth(false);
       }
@@ -43,7 +43,6 @@ export default function SignupPage() {
     checkAuth();
   }, [router]);
 
-  // Show loading while checking auth
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -52,45 +51,61 @@ export default function SignupPage() {
     );
   }
 
-  // Get the redirect URL from query parameters
   const redirectUrl = searchParams.get("redirect") || "/profile";
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setProfileFile(file);
   };
 
   const validateForm = () => {
-    if (!formData.name || !formData.email || !formData.phoneNumber || !formData.password || !formData.confirmPassword || !formData.states || !formData.city) {
-      setError("All fields are required.");
-      return false;
-    }
+    const errs = {};
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
-      return false;
-    }
+    if (!formData.name) errs.name = "Full name is required.";
+    if (!formData.email) errs.email = "Email is required.";
+    if (!formData.phoneNumber) errs.phoneNumber = "Phone number is required.";
+    if (!formData.states) errs.states = "State is required.";
+    if (!formData.city) errs.city = "City is required.";
+    if (!formData.password) errs.password = "Password is required.";
+    if (!formData.confirmPassword)
+      errs.confirmPassword = "Confirm password is required.";
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long.");
-      return false;
+    if (formData.password && formData.password.length < 6) {
+      errs.password = "Password must be at least 6 characters.";
     }
 
     const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(formData.phoneNumber)) {
-      setError("Please enter a valid 10-digit phone number.");
-      return false;
+    if (formData.phoneNumber && !phoneRegex.test(formData.phoneNumber)) {
+      errs.phoneNumber = "Enter a valid 10-digit phone number.";
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError("Please enter a valid email address.");
-      return false;
+    if (formData.email && !emailRegex.test(formData.email)) {
+      errs.email = "Enter a valid email address.";
     }
 
+    if (
+      formData.password &&
+      formData.confirmPassword &&
+      formData.password !== formData.confirmPassword
+    ) {
+      errs.confirmPassword = "Passwords do not match.";
+    }
+
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      setError("Please fix the errors below.");
+      return false;
+    }
+    setError("");
     return true;
   };
 
@@ -106,25 +121,58 @@ export default function SignupPage() {
     }
 
     try {
-      const res = await fetch("/api/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const body = new FormData();
+      body.append("name", formData.name);
+      body.append("phoneNumber", formData.phoneNumber);
+      body.append("email", formData.email);
+      body.append("password", formData.password);
+      body.append("rePassword", formData.confirmPassword);
+      body.append("states", formData.states);
+      body.append("city", formData.city);
+      if (profileFile) {
+        body.append("profile", profileFile);
+      }
 
+      const res = await fetch("/api/signup", { method: "POST", body });
       const data = await res.json();
 
       if (!res.ok) {
+        if (data.error?.toLowerCase().includes("email")) {
+          setFieldErrors((prev) => ({ ...prev, email: data.error }));
+        } else if (data.error?.toLowerCase().includes("phone")) {
+          setFieldErrors((prev) => ({ ...prev, phoneNumber: data.error }));
+        }
         setError(data.error || "Signup failed.");
         setIsLoading(false);
-      } else {
-        setSuccess("Account created successfully! Redirecting to login...");
+        return;
+      }
+
+      // Auto login
+      const loginRes = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phoneNumber: formData.phoneNumber,
+          password: formData.password,
+        }),
+      });
+
+      if (!loginRes.ok) {
+        setSuccess("Account created! Please login.");
         setTimeout(() => {
           router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
-        }, 2000);
+        }, 1200);
+        setIsLoading(false);
+        return;
       }
+
+      setSuccess("Account created! Logging you in...");
+      window.dispatchEvent(
+        new CustomEvent("authStateChanged", { detail: { isAuthenticated: true } })
+      );
+      setTimeout(() => {
+        router.push(redirectUrl);
+      }, 800);
     } catch (err) {
       setError("Something went wrong. Please try again.");
       setIsLoading(false);
@@ -138,114 +186,78 @@ export default function SignupPage() {
           <h2 className="text-3xl font-semibold text-[#290c52]">
             Create Account
           </h2>
-          <p className="mt-2 text-gray-600 text-sm">
-            Join MPCPCT today...
-          </p>
+          <p className="mt-2 text-gray-600 text-sm">Join MPCPCT today...</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name Input */}
+        {error && (
+          <div className="mb-4 p-3 rounded bg-red-50 border border-red-200 text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+          encType="multipart/form-data"
+        >
+          {/* Reusable Input */}
+          {[
+            { id: "name", label: "Full Name", type: "text" },
+            { id: "email", label: "Email", type: "email" },
+            { id: "phoneNumber", label: "Phone Number", type: "tel" },
+            { id: "states", label: "State", type: "text" },
+            { id: "city", label: "City", type: "text" },
+          ].map((field) => (
+            <div key={field.id} className="relative">
+              <input
+                type={field.type}
+                id={field.id}
+                name={field.id}
+                value={formData[field.id]}
+                onChange={handleInputChange}
+                className={`peer px-4 py-3 w-full bg-transparent border-2 ${
+                  fieldErrors[field.id]
+                    ? "border-red-500"
+                    : "border-gray-600"
+                } rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300`}
+                placeholder={field.label}
+                required
+              />
+              <label
+                htmlFor={field.id}
+                className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 
+                peer-placeholder-shown:top-3 peer-placeholder-shown:text-base 
+                peer-focus:-top-2.5 peer-focus:text-blue-600"
+              >
+                {field.label}
+              </label>
+              {fieldErrors[field.id] && (
+                <p className="mt-1 text-xs text-red-600">
+                  {fieldErrors[field.id]}
+                </p>
+              )}
+            </div>
+          ))}
+
+          {/* Profile Upload */}
           <div className="relative">
             <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300"
-              placeholder="Full Name"
-              required
+              type="file"
+              id="profile"
+              name="profile"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 transition-all duration-300"
             />
             <label
-              htmlFor="name"
-              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
+              htmlFor="profile"
+              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600"
             >
-              Full Name
+              Profile Photo (optional)
             </label>
           </div>
 
-          {/* Email Input */}
-          <div className="relative">
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300"
-              placeholder="Email"
-              required
-            />
-            <label
-              htmlFor="email"
-              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
-            >
-              Email
-            </label>
-          </div>
-
-          {/* Phone Number Input */}
-          <div className="relative">
-            <input
-              type="tel"
-              id="phoneNumber"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleInputChange}
-              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300"
-              placeholder="Phone Number"
-              required
-              pattern="[0-9]{10}"
-            />
-            <label
-              htmlFor="phoneNumber"
-              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
-            >
-              Phone Number
-            </label>
-          </div>
-
-          {/* State Input */}
-          <div className="relative">
-            <input
-              type="text"
-              id="states"
-              name="states"
-              value={formData.states}
-              onChange={handleInputChange}
-              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300"
-              placeholder="State"
-              required
-            />
-            <label
-              htmlFor="states"
-              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
-            >
-              State
-            </label>
-          </div>
-
-          {/* City Input */}
-          <div className="relative">
-            <input
-              type="text"
-              id="city"
-              name="city"
-              value={formData.city}
-              onChange={handleInputChange}
-              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300"
-              placeholder="City"
-              required
-            />
-            <label
-              htmlFor="city"
-              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
-            >
-              City
-            </label>
-          </div>
-
-          {/* Password Input */}
+          {/* Password */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -253,13 +265,18 @@ export default function SignupPage() {
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300 pr-12"
+              autoComplete="new-password"
+              className={`peer px-4 py-3 w-full bg-transparent border-2 ${
+                fieldErrors.password ? "border-red-500" : "border-gray-600"
+              } rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300 pr-12`}
               placeholder="Password"
               required
             />
             <label
               htmlFor="password"
-              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
+              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 
+              peer-placeholder-shown:top-3 peer-placeholder-shown:text-base 
+              peer-focus:-top-2.5 peer-focus:text-blue-600"
             >
               Password
             </label>
@@ -271,9 +288,12 @@ export default function SignupPage() {
             >
               {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
+            {fieldErrors.password && (
+              <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>
+            )}
           </div>
 
-          {/* Confirm Password Input */}
+          {/* Confirm Password */}
           <div className="relative">
             <input
               type={showConfirmPassword ? "text" : "password"}
@@ -281,13 +301,18 @@ export default function SignupPage() {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleInputChange}
-              className="peer px-4 py-3 w-full bg-transparent border-2 border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300 pr-12"
+              autoComplete="new-password"
+              className={`peer px-4 py-3 w-full bg-transparent border-2 ${
+                fieldErrors.confirmPassword ? "border-red-500" : "border-gray-600"
+              } rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-transparent transition-all duration-300 pr-12`}
               placeholder="Confirm Password"
               required
             />
             <label
               htmlFor="confirmPassword"
-              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-blue-600"
+              className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all duration-300 
+              peer-placeholder-shown:top-3 peer-placeholder-shown:text-base 
+              peer-focus:-top-2.5 peer-focus:text-blue-600"
             >
               Confirm Password
             </label>
@@ -295,10 +320,17 @@ export default function SignupPage() {
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-blue-500 transition-all duration-200"
-              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              aria-label={
+                showConfirmPassword ? "Hide password" : "Show password"
+              }
             >
               {showConfirmPassword ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
+            {fieldErrors.confirmPassword && (
+              <p className="mt-1 text-xs text-red-600">
+                {fieldErrors.confirmPassword}
+              </p>
+            )}
           </div>
 
           {/* Bottom Links */}
@@ -306,7 +338,11 @@ export default function SignupPage() {
             <p className="text-gray-600">
               Already have an account?{" "}
               <a
-                href={`/login${redirectUrl !== "/profile" ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`}
+                href={`/login${
+                  redirectUrl !== "/profile"
+                    ? `?redirect=${encodeURIComponent(redirectUrl)}`
+                    : ""
+                }`}
                 className="text-blue-600 hover:text-blue-400 hover:underline transition-all duration-200"
               >
                 Login
@@ -314,12 +350,11 @@ export default function SignupPage() {
             </p>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit */}
           <button
             type="submit"
             disabled={isLoading}
             className="w-full py-3 px-4 bg-[#290c52] text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-600 disabled:cursor-not-allowed transition-all duration-300"
-            aria-label={isLoading ? "Creating account..." : "Create Account"}
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
@@ -340,7 +375,9 @@ export default function SignupPage() {
                   <path
                     className="opacity-75"
                     fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.2A7.963 7.963 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 
+                    5.2A7.963 7.963 0 014 12H0c0 
+                    3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
                 Creating account...
@@ -351,12 +388,6 @@ export default function SignupPage() {
           </button>
         </form>
 
-        {/* Feedback messages */}
-        {error && (
-          <p className="mt-4 text-center text-sm text-red-600 animate-fade">
-            {error}
-          </p>
-        )}
         {success && (
           <p className="mt-4 text-center text-sm text-green-600 animate-fade">
             {success}

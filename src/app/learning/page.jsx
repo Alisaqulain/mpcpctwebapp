@@ -220,7 +220,7 @@ export default function TypingTutor() {
               }}
               className={`pl-2 cursor-pointer px-4 py-2 rounded-md ${
                 selectedSection === section.id 
-                  ? "border w-70 border-white bg-white text-[#290c52] font-bold" 
+                  ? "border w-95 border-white bg-white text-[#290c52] font-bold" 
                   : "border-none"
               }`}
             >
